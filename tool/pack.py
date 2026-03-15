@@ -5,7 +5,7 @@ import tomllib
 from importlib import import_module, metadata
 from rich.console import Console
 from rich.status import Status
-from util import print_styled_error, get_materials_path, create_pack_manifest, check_conf, SHADERC_PATH
+from util import print_styled_error, get_materials_path, create_pack_manifest, check_conf, SHADERC_PATH, GRAFIKA_DEPLOY_PATH
 from lazurite.compiler.macro_define import MacroDefine
 from lazurite import util
 
@@ -220,4 +220,20 @@ def run(args):
         console.print("\n~ [bold]Archive pack\n ", pack_archive)
         shutil.make_archive(pack_dir, 'zip', pack_dir)
         if not is_ios:
+            if os.path.exists(pack_archive):
+                os.remove(pack_archive)
             os.rename(pack_dir + '.zip', pack_archive)
+
+    # Sync binaries to development resource pack
+    if profile == 'windows' and os.name == 'nt' and os.path.exists(GRAFIKA_DEPLOY_PATH):
+        # Strictly copy ONLY subpack materials (Clouds and RenderChunk) as requested
+        for subpack in pack_config.get('subpack', []):
+            subpack_name = subpack['define'].lower()
+            sub_mats_dir = os.path.join(pack_dir, 'subpacks', subpack_name, 'renderer', 'materials')
+            if os.path.exists(sub_mats_dir):
+                for file in os.listdir(sub_mats_dir):
+                    if file.endswith(".bin"):
+                        print(f"  > Deploying {file} from {subpack_name}")
+                        shutil.copy2(os.path.join(sub_mats_dir, file), os.path.join(GRAFIKA_DEPLOY_PATH, file))
+        print(f"\n~ Deployed subpack binaries to: {GRAFIKA_DEPLOY_PATH}", flush=True)
+

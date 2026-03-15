@@ -100,7 +100,7 @@ def run(args):
         exit(1)
     shaderc_url, shaderc_path = shaderc_details
 
-    if args.reset:
+    if args.reset and os.path.exists(data_path):
         shutil.rmtree(data_path)
 
     if not os.path.exists(data_path):
