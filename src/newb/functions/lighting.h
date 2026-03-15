@@ -47,8 +47,14 @@ vec3 nlLighting(
   if (env.nether || env.end) {
     // nether & end lighting
 
-    light = env.end ? NL_END_AMBIENT : NL_NETHER_AMBIENT;
-    light *= gameBrightness;
+    if (env.end) {
+      light = NL_END_AMBIENT * gameBrightness;
+      // Fluorescent glow for End Stone (vibrant purple tint)
+      light = mix(light, vec3(0.5, 0.1, 0.8) * gameBrightness * 1.5, 0.3);
+      // Void Pulse removed
+    } else {
+      light = NL_NETHER_AMBIENT * gameBrightness;
+    }
 
     lum = luminance(light);
     light += skycol.horizon/(1.0+lum);

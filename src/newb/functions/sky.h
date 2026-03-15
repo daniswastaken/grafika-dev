@@ -128,25 +128,118 @@ vec3 renderOverworldSky(nl_skycolor skyCol, nl_environment env, vec3 viewDir, bo
 
 vec3 renderEndSky(vec3 horizonCol, vec3 zenithCol, vec3 viewDir, float t) {
   t *= 0.1;
-  float a = atan2(viewDir.x, viewDir.z);
 
-  float n1 = 0.5 + 0.5*sin(3.0*a + t + 10.0*viewDir.x*viewDir.y);
+  // --- Black Hole Geometry ---
+  vec3 bhPos = normalize(vec3(0.5, 0.8, -0.4)); // Moved higher up to be more central in the sky
+  vec3 forward = bhPos;
+  vec3 right = normalize(cross(vec3(0.0, 1.0, 0.0), forward));
+  vec3 up = cross(forward, right);
+
+  vec2 uv = vec2(dot(viewDir, right), dot(viewDir, up));
+  float d = length(uv);
+  // Hard mask: zero out ALL black hole effects when looking away from the BH
+  float faceMask = step(0.0, dot(viewDir, forward));
+
+  // --- Gravitational Lensing ---
+  float rs = 0.22; // Massive Gargantua-sized Schwarzschild radius
+  vec3 diff = bhPos - viewDir;
+  float lens = (rs * rs * 1.5) / (d*d + 0.0001);
+  lens = min(lens, 1.5); 
+  // Bend viewDir towards the black hole to simulate light curving around it
+  vec3 lensedDir = normalize(viewDir + diff * lens * smoothstep(rs, rs*4.0, d));
+
+  // --- Procedural End Sky (using lensed direction) ---
+  float a = atan2(lensedDir.x, lensedDir.z);
+
+  float n1 = 0.5 + 0.5*sin(3.0*a + t + 10.0*lensedDir.x*lensedDir.y);
   float n2 = 0.5 + 0.5*sin(5.0*a + 0.5*t + 5.0*n1 + 0.1*sin(40.0*a -4.0*t));
 
   float waves = 0.7*n2*n1 + 0.3*n1;
 
-  float grad = 0.5 + 0.5*viewDir.y;
+  float grad = 0.5 + 0.5*lensedDir.y;
   float streaks = waves*(1.0 - grad*grad*grad);
-  streaks += (1.0-streaks)*smoothstep(1.0-waves, -1.0, viewDir.y);
+  streaks += (1.0-streaks)*smoothstep(1.0-waves, -1.0, lensedDir.y);
 
-  float f = 0.3*streaks + 0.7*smoothstep(1.0, -0.5, viewDir.y);
+  float f = 0.3*streaks + 0.7*smoothstep(1.0, -0.5, lensedDir.y);
   float h = streaks*streaks;
   float g = h*h;
   g *= g;
 
   vec3 sky = mix(zenithCol, horizonCol, f*f);
   sky += (0.1*streaks + 2.0*g*g*g + h*h*h)*vec3(2.0,0.5,0.0);
-  sky += 0.25*streaks*spectrum(sin(2.0*viewDir.x*viewDir.y+t));
+  sky += 0.25*streaks*spectrum(sin(2.0*lensedDir.x*lensedDir.y+t));
+
+  // --- Black Hole: Hyper-Realistic Accretion Disk & Glow ---
+
+  // Color palette (Interstellar Gargantua inspired)
+  vec3 diskColorHot   = vec3(1.0, 0.95, 0.70);  // White-gold inner core
+  vec3 diskColorMid   = vec3(1.0, 0.45, 0.05);  // Intense orange mid-disk
+  vec3 diskColorCool  = vec3(0.55, 0.08, 0.01); // Deep ember red outer rim
+
+  // 1. Accretion Disk — physical plasma orbiting the singularity
+  float tilt = 6.5; // Vertical squish to flatten the disk ellipse
+  vec2 diskUv  = vec2(uv.x, uv.y * tilt);
+  float diskD  = length(diskUv);
+  float diskInner = rs * 1.1;
+  float diskOuter = rs * 3.3;
+
+  // Normalized position 0=inner edge, 1=outer edge
+  float diskT = clamp((diskD - diskInner) / (diskOuter - diskInner), 0.0, 1.0);
+
+  // Smooth inner+outer edge falloff — no harsh clipping
+  float diskAlpha = smoothstep(diskOuter * 1.1, diskOuter * 0.85, diskD)
+                  * smoothstep(diskInner * 0.85, diskInner * 1.0,  diskD);
+
+  // Radial heat falloff: blazing inner edge, fading ember at outer rim
+  float diskHeat = pow(1.0 - diskT, 2.0) * 0.85 + 0.15;
+
+  // Turbulent noise — two octaves for fibrous swirling streaks
+  float angle = atan2(diskUv.y, diskUv.x);
+  float diskN1 = noise3D(vec3(diskUv * 18.0, t * 2.5 - angle * 1.8));
+  float diskN2 = noise3D(vec3(diskUv * 40.0, t * 4.0 + angle * 0.8));
+  float diskNoise = diskN1 * 0.65 + diskN2 * 0.35;
+
+  // Color gradient: white-gold → deep orange → ember red
+  vec3 diskColor = mix(diskColorHot, diskColorMid, smoothstep(0.0, 0.45, diskT));
+  diskColor      = mix(diskColor, diskColorCool,   smoothstep(0.35, 1.0, diskT));
+
+  // Extra inner bloom: razor-hot glow right at the event horizon boundary
+  float innerBloom = 0.04 / (abs(diskD - diskInner) + 0.004);
+  innerBloom *= smoothstep(diskOuter, diskInner, diskD); // Clamp to disk region
+
+  // Compose: heat * noise variation + inner bloom
+  float noiseVar = 0.55 + 0.45 * diskNoise;
+  vec3 finalDisk = (diskHeat * diskAlpha * noiseVar * diskColor
+                  + innerBloom * diskColorHot) * 3.5;
+
+  // 2. Lensed Back-Arcs (Up AND Down) — bent disk light over/under the BH
+  float arcDist = abs(d - rs * 1.1);
+  float arcVertMask = smoothstep(rs * 0.02, rs * 0.1, abs(uv.y)); // Soft equatorial gap
+  float arcRadialMask = smoothstep(rs * 2.8, rs * 0.9, d);        // Fade with distance
+
+  float arcNoise = noise3D(vec3(uv * 22.0, t * 2.0 + angle * 1.5));
+  float arcGlow = (0.022 / (arcDist + 0.004)) * arcVertMask * arcRadialMask
+                * (0.65 + 0.35 * arcNoise);
+
+  // Arc color: same fiery palette — concentrated bent photons look hotter
+  vec3 arcColor = mix(diskColorHot, diskColorMid, clamp(d / (rs * 2.5), 0.0, 1.0));
+  sky += arcGlow * arcColor * 5.5 * faceMask;
+
+  // 3. Add flat disk to sky
+  sky += finalDisk * faceMask;
+
+  // 4. Singularity (Pitch Black) — smooth edge
+  float inBH = (1.0 - smoothstep(rs * 0.92, rs * 1.0, d)) * faceMask;
+  sky *= (1.0 - inBH);
+
+  // 5. Photon Ring — razor-sharp blazing white ring at event horizon
+  float photonRing = (0.008 / (abs(d - rs * 1.01) + 0.0006))
+                   * smoothstep(rs * 1.4, rs, d) * faceMask;
+  sky += photonRing * mix(diskColorHot, vec3(1.0, 1.0, 1.0), 0.5) * 6.0;
+
+  // 6. Front Disk Cover: disk material passes in front of singularity below equator
+  float frontMask = smoothstep(rs * 0.06, -rs * 0.02, uv.y);
+  sky += finalDisk * frontMask * inBH;
 
   return sky;
 }
