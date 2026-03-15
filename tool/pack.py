@@ -226,7 +226,17 @@ def run(args):
 
     # Sync binaries to development resource pack
     if profile == 'windows' and os.name == 'nt' and os.path.exists(GRAFIKA_DEPLOY_PATH):
-        # Strictly copy ONLY subpack materials (Clouds and RenderChunk) as requested
+        # We need to deploy all built binaries, but Clouds and RenderChunk should come from subpacks
+        subpack_overrides = ["Clouds.material.bin", "RenderChunk.material.bin"]
+        
+        # 1. Deploy default materials (excluding those that should come from subpacks)
+        if os.path.exists(mats_dir):
+            for file in os.listdir(mats_dir):
+                if file.endswith(".bin") and file not in subpack_overrides:
+                    print(f"  > Deploying {file} from default")
+                    shutil.copy2(os.path.join(mats_dir, file), os.path.join(GRAFIKA_DEPLOY_PATH, file))
+
+        # 2. Deploy subpack materials (these will provide Clouds and RenderChunk)
         for subpack in pack_config.get('subpack', []):
             subpack_name = subpack['define'].lower()
             sub_mats_dir = os.path.join(pack_dir, 'subpacks', subpack_name, 'renderer', 'materials')
@@ -235,5 +245,6 @@ def run(args):
                     if file.endswith(".bin"):
                         print(f"  > Deploying {file} from {subpack_name}")
                         shutil.copy2(os.path.join(sub_mats_dir, file), os.path.join(GRAFIKA_DEPLOY_PATH, file))
-        print(f"\n~ Deployed subpack binaries to: {GRAFIKA_DEPLOY_PATH}", flush=True)
+        
+        print(f"\n~ Deployed all material binaries to: {GRAFIKA_DEPLOY_PATH}", flush=True)
 
