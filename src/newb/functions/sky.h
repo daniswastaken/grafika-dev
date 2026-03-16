@@ -140,7 +140,8 @@ vec3 renderEndSky(vec3 horizonCol, vec3 zenithCol, vec3 viewDir, float t) {
   vec3 right = normalize(cross(vec3(0.0, 1.0, 0.0), forward));
   vec3 up = cross(forward, right);
 
-  // uv: Screen-space coordinates centered on the BH position
+  //  vec3 bhDirT = normalize(cross(bhDirs, bhPos));              // Up vector
+  
   vec2 uv = vec2(dot(viewDir, right), dot(viewDir, up));
   float d = length(uv); // Distance from the absolute center of the BH
   
@@ -150,7 +151,7 @@ vec3 renderEndSky(vec3 horizonCol, vec3 zenithCol, vec3 viewDir, float t) {
   // --- Gravitational Lensing ---
   // rs: Schwarzschild radius (size of the event horizon). 
   // Increase for a massive black hole, decrease for a small one.
-  float rs = 0.22; 
+  float rs = 0.18; 
   
   vec3 diff = bhPos - viewDir;
   // lens: Strength of light bending. More photons are bent closer to 'rs'.
@@ -287,7 +288,11 @@ vec3 nlRenderSky(nl_skycolor skycol, nl_environment env, vec3 viewDir, float t, 
   viewDir.y = -viewDir.y;
 
   if (env.end) {
-    sky = renderEndSky(skycol.horizon, skycol.zenith, viewDir, t);
+    if (isSkyPlane) {
+      sky = renderEndSky(skycol.horizon, skycol.zenith, viewDir, t);
+    } else {
+      sky = skycol.horizon; // Render normal fog over distant blocks
+    }
   } else {
     sky = renderOverworldSky(skycol, env, viewDir, isSkyPlane);
     #ifdef NL_UNDERWATER_STREAKS
