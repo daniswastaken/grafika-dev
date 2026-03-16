@@ -42,6 +42,7 @@
 #define NL_SUNLIGHT_INTENSITY 3.0   // 1.0 weak ~ 5.0 bright
 #define NL_TORCHLIGHT_INTENSITY 1.0 // 0.5 weak ~ 3.0 bright
 #define NL_SHADOW_INTENSITY 0.8     // 0.0 no shadow ~ 1.0 strong shadow
+#define NL_MIN_LIGHTING_BOOST 1.5   // 1.0 minimal lighting boost for dark areas ~ 3.0 brighter dark areas
 // #define NL_BLINKING_TORCH           // [toggle] flickering light
 #define NL_CLOUD_SHADOW // [toggle] cloud shadow (simple clouds only)
 
@@ -53,7 +54,6 @@
 /* Ambient light on terrain (light that is added everywhere) */
 #define NL_NETHER_AMBIENT vec3(3.0, 2.16, 1.89)
 #define NL_END_AMBIENT vec3(1.98, 1.25, 2.3)
-
 /* Torch colors */
 #define NL_OVERWORLD_TORCH_COL vec3(1.0, 0.52, 0.18)
 #define NL_UNDERWATER_TORCH_COL vec3(1.0, 0.52, 0.18)
