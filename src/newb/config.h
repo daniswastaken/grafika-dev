@@ -28,8 +28,7 @@
 */
 
 /* Color correction */
-#define NL_TONEMAP_TYPE                                                        \
-  3                   // 1:Exponential, 2:Reinhard, 3:Extended Reinhard, 4:ACES
+#define NL_TONEMAP_TYPE 3 // 1:Exponential, 2:Reinhard, 3:Extended Reinhard, 4:ACES
 #define NL_GAMMA 1.3 // 0.3 low ~ 2.0 high
 // #define NL_EXPOSURE 1.3              // [toggle] 0.5 dark ~ 3.0 bright
 // #define NL_SATURATION 1.4            // [toggle] 0.0 grayscale ~ 4.0 super
@@ -204,7 +203,7 @@
 #define NL_MOON_TILT 45.0       // 0.0 no tilt ~ 90.0 tilt of 90 degrees
 
 /* Fake godrays during sunrise/sunset */
-// #define NL_GODRAY 0.8 // [toggle] 0.1 subtle ~ 0.8 strong
+#define NL_GODRAY 0.8 // [toggle] 0.1 subtle ~ 0.8 strong
 
 /* Sky reflection */
 // #define NL_GROUND_REFL 0.4       // [toggle] 0.2 slightly reflective ~ 1.0
