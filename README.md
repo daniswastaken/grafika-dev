@@ -1,58 +1,29 @@
-# Newb X Legacy
+# Grafika
 
-**Newb X Legacy** is a RenderDragon successor to the legacy GLSL shader, [Newb Shader](https://github.com/devendrn/newb-shader-mcbe). It is an enhanced vanilla shader that focuses on being lightweight and having soft aesthetics. It supports Minecraft Bedrock 1.26+ (Windows/Android/iOS).
+**Grafika** is a high-performance, anime-style shader pack for Minecraft Bedrock (RenderDragon), built upon the solid foundation of **Newb Shaders**. It focuses on delivering a "next-gen" visual experience while maintaining the lightweight spirit of its predecessor.
 
-<br>
+## 🎨 Why Anime-Style?
+The "anime-style" aesthetic is defined by its clean, sharp visual separation. By implementing a dedicated **Stencil Outline System**, Grafika gives every entity a distinct border—much like the hand-drawn lines found in traditional anime art. This ensures that characters and mobs stand out vividly against the environment, creating a stylized, high-fidelity look.
 
-![Screenshots](docs/screenshots.jpg "Newb X Legacy 15.47, MCBE 1.21.0")
+## ✨ Key Modifications & Features
 
-## Downloads
+### 🌌 The Singularity (End Sky)
+The highlight of Grafika is a completely custom, procedurally rendered **Black Hole** in the End dimension.
+- **Gravitational Lensing**: Light from the background stars and nebulae bends realistically around the event horizon.
+- **Accretion Disk**: A multi-layered, swirling plasma disk with "white-hot" heat falloff and turbulent noise.
+- **Photon Rings**: Layered cinematic rings (inner and outer) that create a high-fidelity "Gargantua" style aesthetic.
+- **Dynamic Animation**: The disk and lensing effects are fully animated for a living, breathing void.
 
-You can download the shader pack from [release page](https://github.com/devendrn/newb-x-mcbe/releases/latest).
+### 💡 Advanced Lighting & Atmosphere
+- **Glowing Ores**: Implements high-intensity emissive textures with a subtle shimmering effect for all ore types.
+- **Fluorescent End Stone**: End Stone features a vibrant, multi-layered purple glow that pulses with the dimension's energy.
+- **Cinematic Overworld**: Tuned sun/moon paths, custom fog densities, and a refined color palette for a more immersive experience.
+- **Enhanced Lava**: A custom noise-based "lava bump" effect that adds depth and movement to lava surfaces.
+- **Optimized Performance**: Despite the advanced effects, Grafika remains highly optimized for mobile and desktop devices.
 
-## Installation
+## 📥 Installation & Usage
+For installation instructions, please refer to the [Resource Pack README](https://github.com/daniswastaken/grafika).
 
-> [!NOTE]
-> Shaders are not officially supported on Minecraft Bedrock. The following are unofficial ways to load shaders. There are multiple ways to get it working. Start with the recommended method. If that doesn't work try the other method.
-
-### Android
-
-| **Using MB Loader APK (Recommended):** |
-|:-|
-| 1. Install [MB Loader APK](https://play.google.com/store/apps/details?id=io.bambosan.mbloader&pcampaignid=web_share) |
-| 2. Launch Minecraft from MB Loader APK. |
-| 2. Import the resource pack and activate it in global resources. |
-
-| **Using Patched Minecraft:** |
-|:-|
-| 1. Install [Patched Minecraft App](https://devendrn.github.io/renderdragon-shaders/shaders/installation/android#using-patch-app) |
-| 2. Import the resource pack and activate it in global resources. |
-
-### Windows
-
-| **Using BRD Mod (Recommended)** |
-|:-|
-| 1. Use [BetterRenderDragon](https://github.com/QYCottage/BetterRenderDragon/releases/latest) to enable MaterialBinLoader. |
-| 2. Import the resource pack and activate it in global resources. |
-
-| **Using Matject** |
-|:-|
-| 1. Follow this [guide](https://faizul726.github.io/matject/docs/guide-for-beginners) |
-
-### Linux / Mac
-This method is for [mcpelauncher-manifest](https://mcpelauncher.readthedocs.io/en/latest/getting_started/index.html).
-
-| **Using mbl mod (Recommended): x86_64 arch** |
-|:-|
-| 1. Install [mcpelauncher-materialbinloader-mod](https://github.com/CrackedMatter/mcpelauncher-materialbinloader). |
-| 2. Import the resource pack and activate it in global resources. |
-
-| **Using shaders mod: x86_64, x86, arm64, arm arch** |
-|:-|
-| 1. Download [mcpelauncher-shadersmod](https://github.com/GameParrot/mcpelauncher-shadersmod/releases/latest). |
-| 2. Follow this [guide](https://faizul726.github.io/guides/shadersmodinstallation) to setup. |
-
-<br>
 
 ## Building
 
@@ -134,8 +105,7 @@ Clangd can be used to get code completion and error checks for source files insi
 - **Neovim**: Install clangd LSP.
 - **VSCode**: Install [vscode-clangd](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd) extension.
 
-## License
-
-**Source Code:** The "Newb Shader" source code is licensed under the MIT License. You are free to modify, distribute, and create derivative works based on the source code.
-
-**Compiled Resource Packs (`.mcpack` files):** The compiled resource packs distributed by the "Newb Shader" project and its variant creators are copyrighted works with restrictions. See the `COPYRIGHT.txt` file within each resource pack for more information.
+## 📜 Credits & License
+- **Base Shader**: [Newb Shaders](https://github.com/devendrn/newb-shader-mcbe) by devendrn.
+- **Modifications**: daniswastaken.
+- **License**: The "Newb Shader" source code is licensed under the **MIT License**. You are free to modify, distribute, and create derivative works based on the source code.
