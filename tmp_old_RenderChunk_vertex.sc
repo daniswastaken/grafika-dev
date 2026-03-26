@@ -1,4 +1,4 @@
-$input a_color0, a_position, a_texcoord0, a_texcoord1
+﻿$input a_color0, a_position, a_texcoord0, a_texcoord1
 #ifdef INSTANCING
   $input i_data0, i_data1, i_data2, i_data3
 #endif
@@ -109,10 +109,7 @@ void main() {
   relativeDist += RenderChunkFogAlpha.x;
 
   vec4 fogColor;
-  // CRITICAL: isSkyPlane MUST be false here. 
-  // If set to true, the black hole renders into the fog color for all blocks,
-  // making it visible THROUGH terrain from a distance (the "see-through" bug).
-  fogColor.rgb = nlRenderSky(skycol, env, viewDir, t, false);
+  fogColor.rgb = nlRenderSky(skycol, env, viewDir, t, true);
   fogColor.a = nlRenderFogFade(relativeDist, FogColor.rgb, FogAndDistanceControl.xy);
   #ifdef NL_GODRAY
     fogColor.a = mix(fogColor.a, 1.0, min(NL_GODRAY*nlRenderGodRayIntensity(cPos, worldPos, t, uv1, relativeDist, FogColor.rgb), 1.0));

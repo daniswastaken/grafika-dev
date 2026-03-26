@@ -1,4 +1,4 @@
-#ifndef SKY_H
+﻿#ifndef SKY_H
 #define SKY_H
 
 #include "detection.h"
@@ -289,12 +289,9 @@ vec3 nlRenderSky(nl_skycolor skycol, nl_environment env, vec3 viewDir, float t, 
 
   if (env.end) {
     if (isSkyPlane) {
-      // Render the full volumetric black hole only on the actual sky plane.
       sky = renderEndSky(skycol.horizon, skycol.zenith, viewDir, t);
     } else {
-      // Use solid horizon colors for block fog to ensure proper depth occlusion.
-      // (Prevents the black hole from "bleeding through" blocks at a distance).
-      sky = skycol.horizon; 
+      sky = skycol.horizon; // Render normal fog over distant blocks
     }
   } else {
     sky = renderOverworldSky(skycol, env, viewDir, isSkyPlane);
