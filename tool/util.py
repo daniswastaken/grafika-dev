@@ -12,7 +12,7 @@ if os.name == 'nt':
     SHADERC_PATH += ".exe"
 SRC_MATERIALS_EG_PATH = os.path.join('tool', 'data', 'materials', 'Sky.material.json')
 
-GRAFIKA_DEPLOY_PATH = r"c:\Users\daniswastaken\AppData\Roaming\Minecraft Bedrock\Users\Shared\games\com.mojang\development_resource_packs\Grafika\renderer\materials"
+GRAFIKA_DEPLOY_PATH = r"c:\Users\daniswastaken\AppData\Roaming\Minecraft Bedrock\Users\Shared\games\com.mojang\development_resource_packs\grafika\renderer\materials"
 
 
 def print_styled_error(console: Console, log: str):

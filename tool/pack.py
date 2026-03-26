@@ -5,7 +5,7 @@ import tomllib
 from importlib import import_module, metadata
 from rich.console import Console
 from rich.status import Status
-from util import print_styled_error, get_materials_path, create_pack_manifest, check_conf, SHADERC_PATH
+from util import print_styled_error, get_materials_path, create_pack_manifest, check_conf, SHADERC_PATH, GRAFIKA_DEPLOY_PATH
 from lazurite.compiler.macro_define import MacroDefine
 from lazurite import util
 
