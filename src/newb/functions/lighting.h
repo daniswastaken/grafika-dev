@@ -47,14 +47,8 @@ vec3 nlLighting(
   if (env.nether || env.end) {
     // nether & end lighting
 
-    if (env.end) {
-      light = NL_END_AMBIENT * gameBrightness;
-      // Fluorescent glow for End Stone (vibrant purple tint)
-      light = mix(light, vec3(0.5, 0.1, 0.8) * gameBrightness * 1.5, 0.3);
-      // Void Pulse removed
-    } else {
-      light = NL_NETHER_AMBIENT * gameBrightness;
-    }
+    light = env.end ? NL_END_AMBIENT : NL_NETHER_AMBIENT;
+    light *= gameBrightness;
 
     lum = luminance(light);
     light += skycol.horizon/(1.0+lum);
@@ -224,7 +218,8 @@ vec4 nlEntityEdgeHighlightPreprocess(vec2 texcoord) {
 
 vec4 nlLavaNoise(vec3 gPos, float t) {
   float n = movingNoise2D(gPos.xz + gPos.yy, NL_LAVA_NOISE_SPEED*t, 0.9);
-  return vec4(mix(vec3(1.0, 0.45, 0.15), vec3_splat(1.8), n*n), n);
+  n *= n;
+  return vec4(mix(vec3(0.7, 0.4, 0.0)*smoothstep(-0.1, 0.5, n), vec3_splat(1.5), n*n),n);
 }
 
 #endif
