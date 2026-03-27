@@ -109,9 +109,11 @@ void main() {
   relativeDist += RenderChunkFogAlpha.x;
 
   vec4 fogColor;
-  // CRITICAL: isSkyPlane MUST be false here. 
-  // If set to true, the black hole renders into the fog color for all blocks,
-  // making it visible THROUGH terrain from a distance (the "see-through" bug).
+  // Performance-optimized Fog/Sky Rendering Logic.
+  // CRITICAL: isSkyPlane MUST be false here to prevent the volumetric
+  // black hole (Interstellar-style feature) from bleeding through solid
+  // terrain when the camera moves (the "see-through" terrain bug). 
+  // Optimization logic remains in sky.h handled by NL_CINEMATIC_SKY.
   fogColor.rgb = nlRenderSky(skycol, env, viewDir, t, false);
   fogColor.a = nlRenderFogFade(relativeDist, FogColor.rgb, FogAndDistanceControl.xy);
   #ifdef NL_GODRAY

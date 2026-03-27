@@ -108,12 +108,14 @@ vec3 renderOverworldSky(nl_skycolor skyCol, nl_environment env, vec3 viewDir, bo
   sky *= 0.5+0.5*gradient2;
   sky *= (1.0 + (2.0*mg8 + 7.0*mg8*mg8)*mask)*mix(1.0, mask, NL_SKY_VOID_DARKNESS);
 
+  #ifdef NL_FOG_GLARE
   if (!isSkyPlane) {
     float source = max(0.0, (mg8-0.22)/0.78);
     source *= source;
     source *= source;
     sky *= 1.0 + 15.0*source*(1.0-env.rainFactor);
   }
+  #endif
 
   #ifdef NL_RAINBOW
     float rainbowFade = 0.5 + 0.5*viewDir.y;
@@ -127,158 +129,115 @@ vec3 renderOverworldSky(nl_skycolor skyCol, nl_environment env, vec3 viewDir, bo
 }
 
 vec3 renderEndSky(vec3 horizonCol, vec3 zenithCol, vec3 viewDir, float t) {
-  t *= 0.1; // Animation time scale (smaller = slower motion)
+  t *= 0.1; // Animation time scale
 
-  // --- Black Hole Geometry ---
-  // bhPos: The world-space center of the black hole. 
-  // (0.6, 0.35, -0.65) is lower and further back for a cinematic scale.
-  // Increase Y to raise it, change X/Z to move it horizontally.
+  // --- Center of the Black Hole ---
   vec3 bhPos = normalize(vec3(0.6, 0.35, -0.65)); 
-  
   vec3 forward = bhPos;
-  // Calculate orthogonal axes (right and up) relative to where we are looking (forward)
   vec3 right = normalize(cross(vec3(0.0, 1.0, 0.0), forward));
   vec3 up = cross(forward, right);
-
-  //  vec3 bhDirT = normalize(cross(bhDirs, bhPos));              // Up vector
   
   vec2 uv = vec2(dot(viewDir, right), dot(viewDir, up));
-  float d = length(uv); // Distance from the absolute center of the BH
-  
-  // faceMask: Only render BH effects if the viewer is roughly facing the BH position
+  float d = length(uv); 
   float faceMask = step(0.0, dot(viewDir, forward));
 
-  // --- Gravitational Lensing ---
-  // rs: Schwarzschild radius (size of the event horizon). 
-  // Increase for a massive black hole, decrease for a small one.
-  float rs = 0.18; 
-  
-  vec3 diff = bhPos - viewDir;
-  // lens: Strength of light bending. More photons are bent closer to 'rs'.
-  float lens = (rs * rs * 1.5) / (d*d + 0.0001);
-  lens = min(lens, 1.5); 
-  // lensedDir: The direction light actually comes from after being bent by gravity.
-  vec3 lensedDir = normalize(viewDir + diff * lens * smoothstep(rs, rs*4.0, d));
+  #ifdef NL_CINEMATIC_SKY
+    /* 
+       CINEMATIC SKY: High-resolution volumetric black-hole rendering.
+       Features: Gravitational Lensing, Accretion Disk, Event Horizon, Back-Arcs.
+       Performance: Very intensive. Only recommended for high-end GPUs.
+    */
+    float rs = 0.18; 
+    vec3 diff = bhPos - viewDir;
+    float lens = (rs * rs * 1.5) / (d*d + 0.0001);
+    lens = min(lens, 1.5); 
+    vec3 lensedDir = normalize(viewDir + diff * lens * smoothstep(rs, rs*4.0, d));
 
-  // --- Procedural End Sky (Background) ---
-  // This uses the lensed direction so background stars/nebulae curve around the BH
-  float a = atan2(lensedDir.x, lensedDir.z);
-  float n1 = 0.5 + 0.5*sin(3.0*a + t + 10.0*lensedDir.x*lensedDir.y);
-  float n2 = 0.5 + 0.5*sin(5.0*a + 0.5*t + 5.0*n1 + 0.1*sin(40.0*a -4.0*t));
-  float waves = 0.7*n2*n1 + 0.3*n1;
-  float grad = 0.5 + 0.5*lensedDir.y;
-  float streaks = waves*(1.0 - grad*grad*grad);
-  streaks += (1.0-streaks)*smoothstep(1.0-waves, -1.0, lensedDir.y);
-  float f = 0.3*streaks + 0.7*smoothstep(1.0, -0.5, lensedDir.y);
-  float h = streaks*streaks;
-  float g = h*h;
-  g *= g;
+    // --- Procedural End Sky (Background) ---
+    float a = atan2(lensedDir.x, lensedDir.z);
+    float n1 = 0.5 + 0.5*sin(3.0*a + t + 10.0*lensedDir.x*lensedDir.y);
+    float n2 = 0.5 + 0.5*sin(5.0*a + 0.5*t + 5.0*n1 + 0.1*sin(40.0*a -4.0*t));
+    float waves = 0.7*n2*n1 + 0.3*n1;
+    float grad = 0.5 + 0.5*lensedDir.y;
+    float streaks = waves*(1.0 - grad*grad*grad);
+    streaks += (1.0-streaks)*smoothstep(1.0-waves, -1.0, lensedDir.y);
+    float f = 0.3*streaks + 0.7*smoothstep(1.0, -0.5, lensedDir.y);
+    float h = streaks*streaks;
+    float g = h*h;
+    g *= g;
 
-  vec3 sky = mix(zenithCol, horizonCol, f*f);
-  sky += (0.1*streaks + 2.0*g*g*g + h*h*h)*vec3(2.0,0.5,0.0);
-  sky += 0.25*streaks*spectrum(sin(2.0*lensedDir.x*lensedDir.y+t));
+    vec3 sky = mix(zenithCol, horizonCol, f*f);
+    sky += (0.1*streaks + 2.0*g*g*g + h*h*h)*vec3(2.0,0.5,0.0);
+    sky += 0.25*streaks*spectrum(sin(2.0*lensedDir.x*lensedDir.y+t));
 
-  // --- Black Hole: Realistic Accretion Disk & Glow ---
+    // --- Accretion Disk & Glow ---
+    vec3 diskColorHot   = vec3(1.0, 0.95, 0.70);
+    vec3 diskColorMid   = vec3(1.0, 0.45, 0.05);
+    vec3 diskColorCool  = vec3(0.55, 0.08, 0.01);
 
-  // Accretion Disk Colors (Interstellar Gargantua Palette)
-  vec3 diskColorHot   = vec3(1.0, 0.95, 0.70);  // Inner white-gold (blazing heat)
-  vec3 diskColorMid   = vec3(1.0, 0.45, 0.05);  // Mid-range orange (intense plasma)
-  vec3 diskColorCool  = vec3(0.55, 0.08, 0.01); // Outer deep red (cooling embers)
+    float tilt = 6.5; 
+    vec2 diskUv  = vec2(uv.x, uv.y * tilt);
+    float diskD  = length(diskUv); 
+    float diskInner = rs * 1.1; 
+    float diskOuter = rs * 3.5; 
 
-  // 1. Accretion Disk Shape
-  // tilt: Vertical squish. 1.0 = circle, >1.0 = horizontal oval. 
-  // Use 14+ for edge-on cinematic look, 6.5 for a more balanced perspective.
-  float tilt = 6.5; 
-  vec2 diskUv  = vec2(uv.x, uv.y * tilt);
-  float diskD  = length(diskUv); // "disk-space" distance
-  
-  // diskInner/Outer: The physical range where the disk exists.
-  float diskInner = rs * 1.1; // Starts just outside the event horizon
-  float diskOuter = rs * 3.5; // Ends where the gas is too diffuse to glow
+    float diskT = clamp((diskD - diskInner) / (diskOuter - diskInner), 0.0, 1.0);
+    float diskAlpha = smoothstep(diskOuter * 1.1, diskOuter * 0.85, diskD)
+                    * smoothstep(diskInner * 0.85, diskInner * 1.0,  diskD);
+    float diskHeat = pow(1.0 - diskT, 1.2) * 0.85 + 0.15;
 
-  // diskT: Normalized position (0 = inner edge, 1 = outer edge)
-  float diskT = clamp((diskD - diskInner) / (diskOuter - diskInner), 0.0, 1.0);
+    float angle = atan2(diskUv.y, diskUv.x);
+    float diskN1 = noise3D(vec3(diskUv * 18.0, t * 2.5 - angle * 1.8));
+    float diskN2 = noise3D(vec3(diskUv * 40.0, t * 4.0 + angle * 0.8));
+    float diskNoise = diskN1 * 0.65 + diskN2 * 0.35;
 
-  // diskAlpha: Mask for the disk with soft edges (no harsh pixels)
-  // Shift values (rs*0.85 etc) to sharpen or blur the disk edges.
-  float diskAlpha = smoothstep(diskOuter * 1.1, diskOuter * 0.85, diskD)
-                  * smoothstep(diskInner * 0.85, diskInner * 1.0,  diskD);
+    vec3 diskColor = mix(diskColorHot, diskColorMid, smoothstep(0.0, 0.85, diskT));
+    diskColor      = mix(diskColor, diskColorCool,   smoothstep(0.35, 1.0, diskT));
 
-  // diskHeat: Radial brightness falloff. 
-  // Increase exponent (e.g. 2.0 -> 3.0) for a sharper bright core.
-  // Increase base (e.g. 0.15 -> 0.4) for a brighter outer rim.
-  float diskHeat = pow(1.0 - diskT, 1.2) * 0.85 + 0.15;
+    float innerBloom = 0.08 / (abs(diskD - diskInner) + 0.05);
+    innerBloom *= smoothstep(diskOuter, diskInner, diskD); 
+    float noiseVar = 0.55 + 0.45 * diskNoise;
+    
+    vec3 finalDisk = (diskHeat * diskAlpha * noiseVar * diskColor + innerBloom * diskColorHot) * 3.5;
 
-  // Turbulent Swirling Noise
-  float angle = atan2(diskUv.y, diskUv.x);
-  float diskN1 = noise3D(vec3(diskUv * 18.0, t * 2.5 - angle * 1.8));
-  float diskN2 = noise3D(vec3(diskUv * 40.0, t * 4.0 + angle * 0.8));
-  float diskNoise = diskN1 * 0.65 + diskN2 * 0.35;
+    // Lensed Back-Arcs
+    float arcDist = abs(d - rs * 1.1);
+    float arcVertMask = smoothstep(rs * 0.02, rs * 0.1, abs(uv.y)); 
+    float arcRadialMask = smoothstep(rs * 2.8, rs * 0.9, d);        
+    float arcNoise = noise3D(vec3(uv * 22.0, t * 2.0 + angle * 1.5));
+    float arcGlow = (0.022 / (arcDist + 0.004)) * arcVertMask * arcRadialMask * (0.65 + 0.35 * arcNoise);
+    vec3 arcColor = mix(diskColorHot, diskColorMid, clamp(d / (rs * 2.5), 0.0, 1.0));
+    sky += arcGlow * arcColor * 5.5 * faceMask;
+    sky += finalDisk * faceMask; 
 
-  // Disk Color Mix: Controls the ratio of white-to-orange
-  // 0.45: Increase to make white-hot core larger, decrease to reveal more orange.
-  vec3 diskColor = mix(diskColorHot, diskColorMid, smoothstep(0.0, 0.85, diskT));
-  diskColor      = mix(diskColor, diskColorCool,   smoothstep(0.35, 1.0, diskT));
+    // Singularity & Photon Rings
+    float inBH = (1.0 - smoothstep(rs * 0.92, rs * 1.0, d)) * faceMask;
+    sky *= (1.0 - inBH); 
 
-  // innerBloom: The "white-hot" glow right at the event horizon boundary
-  // 0.08: Intensity (higher = brighter glare)
-  // 0.05: Spread/Width (smaller = sharper line, larger = soft blur)
-  float innerBloom = 0.08 / (abs(diskD - diskInner) + 0.05);
-  innerBloom *= smoothstep(diskOuter, diskInner, diskD); // Clamp glow to the disk area
+    float pCore = (0.005 / (abs(d - rs * 1.01) + 0.0003));
+    float pBloom = (0.012 / (abs(d - rs * 1.01) + 0.012));
+    float pBloomMask = smoothstep(rs * 3.5, rs * 1.2, d) * faceMask;
+    sky += (pCore * 8.0 + pBloom * 1.2) * mix(diskColorHot, vec3(1.0, 1.0, 1.0), 0.8) * pBloomMask;
 
-  // noiseVar: Contrast of the swirling plasma patterns.
-  // 0.55: Base brightness. 
-  // 0.45: Detail intensity (Higher = deeper dark swirling streaks).
-  float noiseVar = 0.55 + 0.45 * diskNoise;
-  
-  // finalDisk: Combine everything. 
-  // 3.5: Exposure control for the whole disk (Increase for more "bloom" effect)
-  vec3 finalDisk = (diskHeat * diskAlpha * noiseVar * diskColor
-                  + innerBloom * diskColorHot) * 3.5;
+    float distortedD = length(uv * vec2(1.0, 1.05)); 
+    float iDist = abs(distortedD - rs * 0.78);
+    float iVar = 0.85 + 0.15 * sin(atan2(uv.y, uv.x) * 2.5 + t);
+    float iVertFade = smoothstep(0.0, rs * 0.3, abs(uv.y));
+    float iCore = (0.0015 / (iDist + 0.00015)) * smoothstep(rs * 0.015, 0.0, iDist);
+    float iDiff = (0.008 / (iDist + 0.02)) * smoothstep(rs * 0.08, rs * 0.01, iDist);
+    sky += (iCore * 10.0 + iDiff * 2.5) * iVertFade * iVar * inBH * mix(diskColorHot, vec3(1.0, 1.0, 1.0), 0.7);
 
-  // 2. Lensed Back-Arcs: Bent disk light appearing over and under the BH
-  float arcDist = abs(d - rs * 1.1);
-  float arcVertMask = smoothstep(rs * 0.02, rs * 0.1, abs(uv.y)); // Soft gap at equator
-  float arcRadialMask = smoothstep(rs * 2.8, rs * 0.9, d);        // Fade arc at distance
-  float arcNoise = noise3D(vec3(uv * 22.0, t * 2.0 + angle * 1.5));
-  float arcGlow = (0.022 / (arcDist + 0.004)) * arcVertMask * arcRadialMask
-                * (0.65 + 0.35 * arcNoise);
-  vec3 arcColor = mix(diskColorHot, diskColorMid, clamp(d / (rs * 2.5), 0.0, 1.0));
-  sky += arcGlow * arcColor * 5.5 * faceMask;
+    float frontMask = smoothstep(rs * 0.06, -rs * 0.02, uv.y);
+    sky += finalDisk * frontMask * inBH;
 
-  // 3. Final Sky Assembly
-  sky += finalDisk * faceMask; // Draw the main accretion disk
-
-  // 4. Singularity (The actual Black Hole)
-  // rs*0.92: Sharpness of the shadow edge.
-  float inBH = (1.0 - smoothstep(rs * 0.92, rs * 1.0, d)) * faceMask;
-  sky *= (1.0 - inBH); // Black out EVERYTHING inside the event horizon
-
-  // 5. Cinematic Photon Ring (Outer): Layered sharp core + ethereal bloom
-  // pBloomMask kills the bloom at distance to prevent it leaking across the faceMask
-  // hemisphere seam (which causes the "whitish box" artifact).
-  float pCore = (0.005 / (abs(d - rs * 1.01) + 0.0003));
-  float pBloom = (0.012 / (abs(d - rs * 1.01) + 0.012));
-  float pBloomMask = smoothstep(rs * 3.5, rs * 1.2, d) * faceMask;
-  sky += (pCore * 8.0 + pBloom * 1.2) * mix(diskColorHot, vec3(1.0, 1.0, 1.0), 0.8) * pBloomMask;
-
-  // 5b. Inner Photon Ring: Volumetric "Lensed Arc" architecture
-  // - DistortedD: Subtle horizontal stretch (1.05x) to break the perfect circle
-  // - iCore/iDiff: Multi-layered glow for volumetric depth (Sharp Core + Warm Bloom)
-  // - iVar: Shimmer variation around the ring to break synthetic consistency
-  float distortedD = length(uv * vec2(1.0, 1.05)); 
-  float iDist = abs(distortedD - rs * 0.78);
-  float iVar = 0.85 + 0.15 * sin(atan2(uv.y, uv.x) * 2.5 + t);
-  float iVertFade = smoothstep(0.0, rs * 0.3, abs(uv.y));
-  
-  float iCore = (0.0015 / (iDist + 0.00015)) * smoothstep(rs * 0.015, 0.0, iDist);
-  float iDiff = (0.008 / (iDist + 0.02)) * smoothstep(rs * 0.08, rs * 0.01, iDist);
-  
-  sky += (iCore * 10.0 + iDiff * 2.5) * iVertFade * iVar * inBH * mix(diskColorHot, vec3(1.0, 1.0, 1.0), 0.7);
-
-  // 6. Front Disk Cover: The part of the disk passing IN FRONT of the black hole
-  float frontMask = smoothstep(rs * 0.06, -rs * 0.02, uv.y);
-  sky += finalDisk * frontMask * inBH;
+  #else
+    // --- Simplified High-Performance End Sky ---
+    float a = atan2(viewDir.x, viewDir.z);
+    float waves = 0.5 + 0.5*sin(3.0*a + t + 10.0*viewDir.x*viewDir.y);
+    float f = smoothstep(1.0, -0.5, viewDir.y);
+    vec3 sky = mix(zenithCol, horizonCol, f*f);
+    sky += 0.2 * waves * vec3(1.0, 0.4, 0.0);
+  #endif
 
   return sky;
 }
@@ -288,30 +247,17 @@ vec3 nlRenderSky(nl_skycolor skycol, nl_environment env, vec3 viewDir, float t, 
   viewDir.y = -viewDir.y;
 
   if (env.end) {
-    if (isSkyPlane) {
-      // Render the full volumetric black hole only on the actual sky plane.
+    // Optimization: We only render the heavy cinematic black hole 
+    // when we are reasonably sure it should be visible (e.g. background sky).
+    // isSkyPlane being false or viewDir pointing too far down should skip it.
+    if (isSkyPlane && viewDir.y > -0.2) {
       sky = renderEndSky(skycol.horizon, skycol.zenith, viewDir, t);
     } else {
-      // Use solid horizon colors for block fog to ensure proper depth occlusion.
-      // (Prevents the black hole from "bleeding through" blocks at a distance).
       sky = skycol.horizon; 
     }
   } else {
+    // isSkyPlane = true here skips the glare math in renderOverworldSky
     sky = renderOverworldSky(skycol, env, viewDir, isSkyPlane);
-    #ifdef NL_UNDERWATER_STREAKS
-      // if (env.underwater) {
-      //   float a = atan2(viewDir.x, viewDir.z);
-      //   float grad = 0.5 + 0.5*viewDir.y;
-      //   grad *= grad;
-      //   float spread = (0.5 + 0.5*sin(3.0*a + 0.2*t + 2.0*sin(5.0*a - 0.4*t)));
-      //   spread *= (0.5 + 0.5*sin(3.0*a - sin(0.5*t)))*grad;
-      //   spread += (1.0-spread)*grad;
-      //   float streaks = spread*spread;
-      //   streaks *= streaks;
-      //   streaks = (spread + 3.0*grad*grad + 4.0*streaks*streaks);
-      //   sky += 2.0*streaks*skycol.horizon;
-      // }
-    #endif
   }
 
   return sky;
