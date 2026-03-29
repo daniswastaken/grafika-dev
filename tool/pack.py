@@ -70,7 +70,7 @@ def _exit_with_error():
     exit(1)
 
 
-def _build(status: Status, profile: str, subpack: str, materials: [str], output_path: str):
+def _build(status: Status, profile: str, subpack: str, materials: [str], output_path: str, lite: bool = False):
     global _current_subpack, _last_log
 
     _current_subpack = subpack
@@ -83,6 +83,9 @@ def _build(status: Status, profile: str, subpack: str, materials: [str], output_
         _exit_with_error()
 
     subpack_define = MacroDefine.from_string(subpack.upper())
+    defines = [subpack_define]
+    if lite:
+        defines.append(MacroDefine.from_string("LITE_CONFIG"))
 
     if not os.path.exists(output_path):
         os.makedirs(output_path)
@@ -94,7 +97,7 @@ def _build(status: Status, profile: str, subpack: str, materials: [str], output_
             output_folder=output_path,
             material_patterns=material_patterns,
             shaderc_path=SHADERC_PATH,
-            defines=[subpack_define]
+            defines=defines
         )
         status.console.print(_last_log)  # flush last log
     except Exception as e:
@@ -174,7 +177,7 @@ def run(args):
         _name = pack_name + " v" + pack_version
         lp.Material.write = mwrite
 
-    _build(status, args.p, "default", pack_config['materials'], mats_dir)
+    _build(status, args.p, "default", pack_config['materials'], mats_dir, args.lite)
 
     for subpack in pack_config['subpack']:
         subpack_name: str = subpack['define'].lower()
@@ -186,7 +189,7 @@ def run(args):
             os.makedirs(subpack_path)
 
         if mats:
-            _build(status, args.p, subpack_name, mats, subpack_mats_path)
+            _build(status, args.p, subpack_name, mats, subpack_mats_path, args.lite)
 
         pack_manifest['subpacks'].append(
             {

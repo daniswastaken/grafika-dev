@@ -41,13 +41,17 @@ def run(args):
 
     with status:
         try:
+            defines = [MacroDefine.from_string(args.s)] if args.s else []
+            if args.lite:
+                defines.append(MacroDefine.from_string("LITE_CONFIG"))
+
             lp.compile(
                 project_path=os.path.join('src', 'materials'),
                 profiles=[args.p],
                 output_folder=output_path,
                 material_patterns=materials_pattern,
                 shaderc_path=SHADERC_PATH,
-                defines=[MacroDefine.from_string(args.s)] if args.s else []
+                defines=defines
             )
         except Exception as e:
             log: str = e.args[0]

@@ -30,6 +30,11 @@ def main():
             default=profile_default,
             help='build profile'
         )
+        p.add_argument(
+            '--lite',
+            action='store_true',
+            help='build with config_lite.h'
+        )
 
     mats_parser.add_argument(
         '-m',

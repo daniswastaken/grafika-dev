@@ -4,7 +4,11 @@
 // Merges all functions into a single file and provides a global config.
 // shaderc will optimize away unused functions per material.
 
+#ifdef LITE_CONFIG
+#include "config_lite.h"
+#else
 #include "config.h"
+#endif
 #include "functions/tonemap.h"
 #include "functions/detection.h"
 #include "functions/fog.h"
