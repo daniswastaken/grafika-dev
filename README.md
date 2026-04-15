@@ -1,30 +1,3 @@
-# Grafika
-
-**Grafika** is a high-performance, anime-style shader pack for Minecraft Bedrock (RenderDragon), built upon the solid foundation of **Newb Shaders**. It focuses on delivering a "next-gen" visual experience while maintaining the lightweight spirit of its predecessor.
-
-## 🎨 Why Anime-Style?
-The "anime-style" aesthetic is defined by its clean, sharp visual separation. By implementing a dedicated **Stencil Outline System**, Grafika gives every entity a distinct border—much like the hand-drawn lines found in traditional anime art. This ensures that characters and mobs stand out vividly against the environment, creating a stylized, high-fidelity look.
-
-## ✨ Key Modifications & Features
-
-### 🌌 The Singularity (End Sky)
-The highlight of Grafika is a completely custom, procedurally rendered **Black Hole** in the End dimension.
-- **Gravitational Lensing**: Light from the background stars and nebulae bends realistically around the event horizon.
-- **Accretion Disk**: A multi-layered, swirling plasma disk with "white-hot" heat falloff and turbulent noise.
-- **Photon Rings**: Layered cinematic rings (inner and outer) that create a high-fidelity "Gargantua" style aesthetic.
-- **Dynamic Animation**: The disk and lensing effects are fully animated for a living, breathing void.
-
-### 💡 Advanced Lighting & Atmosphere
-- **Glowing Ores**: Implements high-intensity emissive textures with a subtle shimmering effect for all ore types.
-- **Fluorescent End Stone**: End Stone features a vibrant, multi-layered purple glow that pulses with the dimension's energy.
-- **Cinematic Overworld**: Tuned sun/moon paths, custom fog densities, and a refined color palette for a more immersive experience.
-- **Enhanced Lava**: A custom noise-based "lava bump" effect that adds depth and movement to lava surfaces.
-- **Optimized Performance**: Despite the advanced effects, Grafika remains highly optimized for mobile and desktop devices.
-
-## 📥 Installation & Usage
-For installation instructions, please refer to the [Resource Pack README](https://github.com/daniswastaken/grafika).
-
-
 ## Building
 
 ### Install dependencies
