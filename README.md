@@ -78,7 +78,7 @@ Clangd can be used to get code completion and error checks for source files insi
 - **Neovim**: Install clangd LSP.
 - **VSCode**: Install [vscode-clangd](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd) extension.
 
-## 📜 Credits & License
+## Credits & License
 - **Base Shader**: [Newb Shaders](https://github.com/devendrn/newb-shader-mcbe) by devendrn.
 - **Modifications**: daniswastaken.
 - **License**: The "Newb Shader" source code is licensed under the **MIT License**. You are free to modify, distribute, and create derivative works based on the source code.
