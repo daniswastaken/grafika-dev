@@ -23,7 +23,7 @@ bool shouldDiscard(vec3 diffuse, float alpha, float epsilon) {
     #endif
 #else
     #if !CHANGE_COLOR && !CHANGE_COLOR_MULTI
-        result = alpha < 0.5; //#line 48
+        result = alpha < 0.5; // #line 48
     #else
         result = alpha < epsilon; // #line 51
     #endif
