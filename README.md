@@ -78,6 +78,43 @@ Clangd can be used to get code completion and error checks for source files insi
 - **Neovim**: Install clangd LSP.
 - **VSCode**: Install [vscode-clangd](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd) extension.
 
+## Updating for New Minecraft Versions
+
+When a new Minecraft update (e.g., 1.26.20) releases, it often changes the underlying material structure, which can break the shader compilation. To fix this, you must update the "source materials" in `tool/data/materials` using the latest game data.
+
+### 1. Extract latest materials
+Use a tool like **MaterialBinTool** to unpack the latest `.material.bin` files from the game into `.json` headers.
+
+### 2. Update tool data
+Run the provided update script to merge the new game data into the build system:
+```powershell
+python tool/update_mats.py --src "C:\Path\To\Your\Unpacked\JSONs"
+```
+This script will:
+- Repair old material formats to match `lazurite v0.8.3`.
+- Merge latest `version`, `uniforms`, and `buffers` from your JSON files.
+- Preserve project-specific shader passes and attributes.
+
+### 3. Rebuild
+After updating, run the build command as usual:
+```powershell
+python tool mats -p windows
+```
+
+<br>
+
+## Troubleshooting
+
+### "Unclosed b'NumericLiteral' starting near 1"
+This error usually means that the `material.json` or `uniforms` files in `src/materials/` are acting as "pointers" (plain text files containing a path like `../../common/material.json`) but `lazurite` expects valid JSON.
+- **Fix**: Replace the pointer files with the actual content of the files they point to.
+
+### "IndexError: list index out of range" during build
+This happens when the base materials in `tool/data/materials` are in an older format than what your `lazurite` version expects.
+- **Fix**: Run `python tool/update_mats.py` with the `--src` of your latest game JSONs to repair and upgrade the base materials.
+
+<br>
+
 ## Credits & License
 - **Base Shader**: [Newb Shaders](https://github.com/devendrn/newb-shader-mcbe) by devendrn.
 - **Modifications**: daniswastaken.
