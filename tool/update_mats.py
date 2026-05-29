@@ -1,17 +1,18 @@
 import json
 import os
 import struct
-
-tool_mats_dir = 'tool/data/materials'
-user_json_dir = r'C:\Users\daniswastaken\Documents\matsJSON\jsonT'
+import argparse
 
 BUFFER_TYPE_MAP = {'Type2D': 0, 'Type2DArray': 1, 'Type3D': 3, 'TypeCube': 4}
 ACCESS_MAP = {'Read': 1, 'Write': 2, 'ReadWrite': 3}
 
-def import_all():
+def import_all(user_json_dir, tool_mats_dir):
     if not os.path.exists(user_json_dir):
         print(f"Error: Directory {user_json_dir} not found.")
         return
+
+    if not os.path.exists(tool_mats_dir):
+        os.makedirs(tool_mats_dir)
 
     count_merged = 0
     count_new = 0
@@ -86,4 +87,10 @@ def import_all():
     print(f"\nDone! Merged {count_merged} existing materials, imported {count_new} new materials.")
 
 if __name__ == "__main__":
-    import_all()
+    parser = argparse.ArgumentParser(description="Update material data from JSONs")
+    parser.add_argument("--src", required=True, help="Path to unpacked JSON materials")
+    parser.add_argument("--dest", default="tool/data/materials", help="Path to save processed materials")
+    
+    args = parser.parse_args()
+    import_all(args.src, args.dest)
+
