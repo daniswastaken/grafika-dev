@@ -3,6 +3,7 @@ import os
 import pack
 import build
 import setup
+import update_mats
 
 
 def main():
@@ -22,6 +23,8 @@ def main():
     mats_parser.set_defaults(func=build.run)
     setup_parser = subparsers.add_parser('setup', help="setup build tool")
     setup_parser.set_defaults(func=setup.run)
+    update_parser = subparsers.add_parser('update', help="update material data from JSONs")
+    update_parser.set_defaults(func=lambda args: update_mats.import_all(args.src, args.dest))
 
     for p in [pack_parser, mats_parser]:
         p.add_argument(
@@ -53,6 +56,18 @@ def main():
         '--reset',
         action='store_true',
         help="reset all data"
+    )
+
+    update_parser.add_argument(
+        "--src",
+        required=True,
+        help="Path to unpacked JSON materials"
+    )
+
+    update_parser.add_argument(
+        "--dest",
+        default="tool/data/materials",
+        help="Path to save processed materials"
     )
 
     pack_parser.add_argument(

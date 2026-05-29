@@ -1,6 +1,6 @@
 # Grafika Toolset Documentation
 
-Grafika use custom Python scripts to wrap `lazurite` and manage RenderDragon material builds.
+Grafika uses custom Python scripts to wrap `lazurite` and manage RenderDragon material builds.
 
 ## Table of Contents
 - [Entry Point: `__main__.py` & `cli.py`](#entry-point)
@@ -8,6 +8,7 @@ Grafika use custom Python scripts to wrap `lazurite` and manage RenderDragon mat
 - [Compiler: `build.py`](#compiler)
 - [Packer & Deployer: `pack.py`](#packer)
 - [Material Updater: `update_mats.py`](#material-updater)
+- [Batch Compiler: `batch_compile.py`](#batch-compiler)
 - [Utilities: `util.py`](#utilities)
 
 ---
@@ -28,6 +29,7 @@ Grafika use custom Python scripts to wrap `lazurite` and manage RenderDragon mat
   - `setup`: Init environment.
   - `mats`: Compile specific materials.
   - `pack`: Build full mcpack.
+  - `update`: Update material data from JSONs.
 - **Global Args**:
   - `-p {android,windows,merged,ios}`: Build profile (Default: OS native).
   - `--lite`: Use `config_lite.h` (defines `LITE_CONFIG` macro).
@@ -119,7 +121,25 @@ The script expects JSON files (e.g., from `MaterialBinTool`) containing:
 
 ### Usage
 ```bash
-python tool/update_mats.py --src "C:/Path/To/JSONs" [--dest "tool/data/materials"]
+python tool update --src "C:/Path/To/JSONs" [--dest "tool/data/materials"]
+```
+
+---
+
+## Batch Compiler: `batch_compile.py`
+
+### Function
+Root script to automate compilation for all platforms and configurations (Full/Lite).
+
+### Actions
+1. **Clean**: Removes and recreates `build/` directory.
+2. **Iterate Platforms**: Loops through `android`, `windows`, `merged`, `ios`.
+3. **Double Build**: Compiles both `Full` and `Lite` versions for every platform.
+4. **Organization**: Moves output to `build/<platform>_<config>/` (e.g., `build/windows_lite`).
+
+### Usage
+```bash
+python batch_compile.py
 ```
 
 ---
@@ -129,3 +149,6 @@ python tool/update_mats.py --src "C:/Path/To/JSONs" [--dest "tool/data/materials
 - **`check_conf`**: Verifies `shaderc` and materials are present and match current platform.
 - **`create_pack_manifest`**: Template for `manifest.json`.
 - **`GRAFIKA_DEPLOY_PATH`**: Hardcoded path used by `pack.py` for direct shader hot-swapping during development.
+
+## Hardcoded Paths (To be fixed)
+- `util.py`: `GRAFIKA_DEPLOY_PATH`
