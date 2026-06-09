@@ -1,0 +1,1 @@
+[1,25,"RTXPostFX.Bloom","RTXPostFX",{},[],[["RasterColor",0,0,0,0,1,"float","white",0,1,"",-1],["gBloomOriginalInput",1,1,0,0,1,"float","white",0,1,"",-1]],[["gViewportScale",2,1,[1.0,1.0,1.0,1.0]],["gBloomMultiplier",2,1,[0.075,0.075,0.075,0.075]],["RenderMode",2,1,[0.0,0.0,0.0,0.0]],["ScreenSize",2,1,[]]],{},[]]

@@ -1,0 +1,1 @@
+[1,25,"Bloom","PostFX",{},[],[["AverageLuminance",0,0,0,0,1,"float","white",0,1,"",-1],["RasterColor",3,3,0,0,1,"float","white",0,1,"",-1],["BlurPyramidTexture",1,1,0,0,1,"float","white",0,1,"",-1],["HDRi",2,2,0,0,1,"float","white",0,1,"",-1]],[["BloomParams",2,1,[0.5,0.0,0.0,0.0]],["ScreenSize",2,1,[]],["ViewportScale",2,1,[1.0,1.0,0.0,0.0]]],{},[]]

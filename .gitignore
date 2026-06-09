@@ -1,7 +1,6 @@
 # ingnore dirs
 build/
 .bak/
-tool/data/
 tool/lib/
 tool/__pycache__/
 .venv
