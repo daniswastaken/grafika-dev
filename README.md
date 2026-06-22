@@ -91,7 +91,7 @@ Run the provided update script to merge the new game data into the build system:
 python tool/update_mats.py --src "C:\Path\To\Your\Unpacked\JSONs"
 ```
 This script will:
-- Repair old material formats to match `lazurite v0.8.3`.
+- Repair old material formats to match `lazurite v0.8.4`.
 - Merge latest `version`, `uniforms`, and `buffers` from your JSON files.
 - Preserve project-specific shader passes and attributes.
 
