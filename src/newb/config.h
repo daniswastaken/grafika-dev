@@ -82,7 +82,7 @@
                FPS boost across all Overworld biomes.
 */
 #define NL_CINEMATIC_SKY 
-#define NL_FOG_GLARE 
+// #define NL_FOG_GLARE 
 
 
 /* Sky colors - zenith=top, horizon=bottom */

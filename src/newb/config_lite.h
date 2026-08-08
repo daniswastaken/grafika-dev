@@ -79,7 +79,7 @@
                This is computationally expensive on the vertex shader. Disable for a major
                FPS boost across all Overworld biomes.
 */
-// #define NL_CINEMATIC_SKY 
+#define NL_CINEMATIC_SKY 
 // #define NL_FOG_GLARE 
 
 
