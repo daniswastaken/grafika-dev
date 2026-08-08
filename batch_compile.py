@@ -2,7 +2,8 @@ import os
 import shutil
 import subprocess
 
-platforms = ['android', 'windows', 'merged', 'ios']
+# platforms = ['android', 'windows', 'merged', 'ios']
+platforms = ['merged']
 build_dir = 'build'
 
 if os.path.exists(build_dir):

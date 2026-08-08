@@ -1,9 +1,9 @@
-name = "Newb Classic"
-version = [0, 16, 52]
-min_supported_mc_version = [1, 26, 10]
+name = "Grafika Shader"
+version = [0, 2, 0]
+min_supported_mc_version = [1, 26, 0]
 description = '''
 §c%w
-§7- An enchanced vanilla shader for Minecraft!
+§7- Anime-style shader.
 %v
 §3https://devendrn.github.io/newb-shader/
 ''' # %w = patch warning, %v = version
