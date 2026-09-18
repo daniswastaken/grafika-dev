@@ -4,7 +4,7 @@
 - [Git](https://git-scm.com/)
 - [Python](https://www.python.org/) 3.11 or higher required
 - Python packages:
-  - [lazurite](https://veka0.github.io/lazurite/#installation) (Must be `v0.8.3`. Newer or older version may not be supported)
+  - [lazurite](https://veka0.github.io/lazurite/#installation) (Must be `v0.10.0` for Minecraft 1.26.50 / material version 26. Newer or older version may not be supported)
   - [rich](https://rich.readthedocs.io/en/stable/introduction.html#installation) (Must be `v14.x.x`)
 
 ### Get source code
@@ -82,6 +82,16 @@ Clangd can be used to get code completion and error checks for source files insi
 
 When a new Minecraft update (e.g., 1.26.20) releases, it often changes the underlying material structure, which can break the shader compilation. To fix this, you must update the "source materials" in `tool/data/materials` using the latest game data.
 
+> [!WARNING]
+> Check the new game material `version` against your `lazurite` before updating.
+> Each lazurite caps at a max version (e.g. `v0.8.4` stops at 25, but 1.26.50 is
+> version 26 and needs `v0.10.0`). Updating `tool/data/materials` to a version
+> your lazurite can't compile gives `Unsupported material version` and no usable
+> bins. Don't overshoot either: newer lazurite drops old game compat
+> (e.g. `v0.11.0` targets 26.60+ and breaks 26.50 files, including a minimal-JSON
+> format bump). The update script migrates old minimal-JSON v1 bases to v2, but it
+> can't add compiler support. Match lazurite to the game first, then update.
+
 ### 1. Extract latest materials
 Use a tool like **MaterialBinTool** to unpack the latest `.material.bin` files from the game into `.json` headers.
 
@@ -91,7 +101,7 @@ Run the provided update script to merge the new game data into the build system:
 python tool/update_mats.py --src "C:\Path\To\Your\Unpacked\JSONs"
 ```
 This script will:
-- Repair old material formats to match `lazurite v0.8.4`.
+- Repair old material formats to match `lazurite v0.10.0` (minimal JSON format v2).
 - Merge latest `version`, `uniforms`, and `buffers` from your JSON files.
 - Preserve project-specific shader passes and attributes.
 

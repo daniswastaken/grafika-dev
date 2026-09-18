@@ -6,6 +6,31 @@ import argparse
 BUFFER_TYPE_MAP = {'Type2D': 0, 'Type2DArray': 1, 'Type3D': 3, 'TypeCube': 4}
 ACCESS_MAP = {'Read': 1, 'Write': 2, 'ReadWrite': 3}
 
+def _migrate_passes_v1_to_v2(base):
+    # Convert minimal JSON format v1 passes (default_variant index map)
+    # to v2 (flag_domain name map), preserving old defaults first.
+    flag_defs = base[4]
+    flag_keys = list(flag_defs.keys())
+    for p in base[9]:
+        if isinstance(p[4], dict) and p[4] and all(k.isdigit() for k in p[4].keys()):
+            old_defvar = p[4]
+            domain = {}
+            for k, v in old_defvar.items():
+                name = flag_keys[int(k)]
+                vals = flag_defs[name]
+                default_val = vals[v]
+                domain[name] = [default_val] + [x for x in vals if x != default_val]
+            for var in p[6]:
+                for k, v in var[1].items():
+                    name = flag_keys[int(k)]
+                    if name not in domain:
+                        vals = flag_defs[name]
+                        default_val = vals[v]
+                        domain[name] = [default_val] + [x for x in vals if x != default_val]
+            p[4] = domain
+    base[0] = 2
+
+
 def import_all(user_json_dir, tool_mats_dir):
     if not os.path.exists(user_json_dir):
         print(f"Error: Directory {user_json_dir} not found.")
@@ -63,7 +88,10 @@ def import_all(user_json_dir, tool_mats_dir):
             # Merge with existing base
             with open(base_path, 'r') as f:
                 base = json.load(f)
-                
+
+            if base[0] == 1:
+                _migrate_passes_v1_to_v2(base)
+            base[0] = 2
             base[1] = version
             base[3] = parent
             base[6] = new_buffers
@@ -75,9 +103,9 @@ def import_all(user_json_dir, tool_mats_dir):
             count_merged += 1
             print(f"Merged existing: {mat_name}")
         else:
-            # Create new minimal 0.8.3 format material (no passes)
+            # Create new minimal 0.10.0 format material (no passes)
             # [format_version, version, name, parent, flag_defs, input_defs, buffers, uniforms, overrides, passes]
-            base = [1, version, mat_name, parent, {}, [], new_buffers, new_uniforms, overrides, []]
+            base = [2, version, mat_name, parent, {}, [], new_buffers, new_uniforms, overrides, []]
             
             with open(base_path, 'w') as f:
                 json.dump(base, f, separators=(',', ':'))

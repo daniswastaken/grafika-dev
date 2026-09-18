@@ -117,7 +117,7 @@ The script expects JSON files (e.g., from `MaterialBinTool`) containing:
    - `Read` -> `1`, `Write` -> `2`, `ReadWrite` -> `3`.
 2. **Merge/Create**:
    - If `.material.json` exists in `tool/data/materials`, it updates the version, parent, buffers, and uniforms.
-   - If new, it creates a minimal `lazurite v0.8.3` material structure.
+   - If new, it creates a minimal `lazurite v0.10.0` material structure.
 
 ### Usage
 ```bash
