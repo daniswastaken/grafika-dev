@@ -3,8 +3,8 @@ $input v_texcoord0
 #include <bgfx_shader.sh>
 
 #ifndef INSTANCING
-  #include <newb/config.h>
-  #include <newb/functions/tonemap.h>
+  #include <grafika/config.h>
+  #include <grafika/functions/tonemap.h>
 
   uniform vec4 SunMoonColor;
 

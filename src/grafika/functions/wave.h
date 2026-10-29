@@ -4,7 +4,7 @@
 #include "utils.h"
 #include "noise.h"
 
-#ifdef NL_LANTERN_WAVE
+#ifdef GS_LANTERN_WAVE
 void lanternWave(
   inout vec3 worldPos, vec3 cPos, vec3 bPos, vec2 bPosC, float texPosY, float rainFactor, vec2 uv1, float windStrength, highp float t
 ) {
@@ -24,7 +24,7 @@ void lanternWave(
     float phase = dot(floor(cPos), vec3_splat(0.3927));
     vec2 theta = vec2(t + phase, t*1.4 + phase);
     theta = sin(vec2(theta.x,theta.x+0.7)) + rainFactor*sin(vec2(theta.y,theta.y+0.7));
-    theta *= NL_LANTERN_WAVE*windStrength;
+    theta *= GS_LANTERN_WAVE*windStrength;
 
     vec2 sinA = sin(theta);
     vec2 cosA = cos(theta);
@@ -38,7 +38,7 @@ void lanternWave(
 }
 #endif
 
-#ifdef NL_EXTRA_PLANTS_WAVE
+#ifdef GS_EXTRA_PLANTS_WAVE
 void extraPlantsFlag(inout bool shouldWave, vec2 uv0, bool isTop) {
   // 1.26.40 (1024x512) vanilla only
   // not meant to be used
@@ -102,16 +102,16 @@ void extraPlantsFlag(inout bool shouldWave, vec2 uv0, bool isTop) {
 }
 #endif
 
-void nlWave(
+void gsWave(
   inout vec3 worldPos, inout vec3 light, float rainFactor, vec2 uv1, vec2 lit,
   vec2 uv0, vec3 bPos, vec4 COLOR, vec3 cPos, vec3 tiledCpos, highp float t, sampler2D terrainTex,
   bool isColored, float camDist, bool isTreeLeaves
 ) {
-  if (camDist > NL_WAVE_RANGE) {  // only wave nearby (better performance)
+  if (camDist > GS_WAVE_RANGE) {  // only wave nearby (better performance)
     return;
   }
 
-  float waveFade = 2.0*max((camDist/NL_WAVE_RANGE) - 0.5, 0.0);
+  float waveFade = 2.0*max((camDist/GS_WAVE_RANGE) - 0.5, 0.0);
   waveFade *= waveFade;
 
   // texture atlas has 64x32 textures (uv0.xy division)
@@ -138,14 +138,14 @@ void nlWave(
     light *= mix(isTop ? 1.2 : 1.2 - 1.2*(bPos.y>0.0 ? 1.5-bPos.y : 0.5), 1.0, waveFade);
   }
 
-  #ifdef NL_PLANTS_WAVE
-    #ifdef NL_EXTRA_PLANTS_WAVE
+  #ifdef GS_PLANTS_WAVE
+    #ifdef GS_EXTRA_PLANTS_WAVE
       extraPlantsFlag(shouldWave, uv0, isTop);
     #endif
 
     if (shouldWave) {
 
-      float wave = NL_PLANTS_WAVE*windStrength;
+      float wave = GS_PLANTS_WAVE*windStrength;
 
       if (isTreeLeaves) {
         wave *= 0.5;
@@ -159,8 +159,8 @@ void nlWave(
 
       float phaseDiff = dot(cPos,vec3_splat(PI_QUART)) + fastRand(tiledCpos.xz + tiledCpos.y);
       wave *= 1.0 + mix(
-        sin(t*NL_WAVE_SPEED + phaseDiff),
-        sin(t*NL_WAVE_SPEED*1.5 + phaseDiff),
+        sin(t*GS_WAVE_SPEED + phaseDiff),
+        sin(t*GS_WAVE_SPEED*1.5 + phaseDiff),
         rainFactor);
 
       //worldPos.y -= 1.0-sqrt(1.0-wave*wave);
@@ -168,7 +168,7 @@ void nlWave(
     }
   #endif
 
-  #ifdef NL_LANTERN_WAVE
+  #ifdef GS_LANTERN_WAVE
     lanternWave(worldPos, cPos, bPos, bPosC, texPosY, rainFactor, uv1, windStrength, t);
   #endif
 }

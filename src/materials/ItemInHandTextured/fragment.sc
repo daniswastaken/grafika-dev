@@ -2,7 +2,7 @@ $input v_color0, v_fog, v_light, v_texcoord0, v_edgemap
 
 #include <bgfx_shader.sh>
 #include <MinecraftRenderer.Materials/ActorUtil.dragonh>
-#include <newb/main.sh>
+#include <grafika/main.sh>
 
 uniform vec4 ChangeColor;
 uniform vec4 OverlayColor;
@@ -38,7 +38,7 @@ void main() {
 
   albedo.rgb *= albedo.rgb * v_light.rgb;
 
-  albedo.rgb *= nlEntityEdgeHighlight(v_edgemap);
+  albedo.rgb *= gsEntityEdgeHighlight(v_edgemap);
 
   albedo.rgb = mix(albedo.rgb, v_fog.rgb, v_fog.a);
 

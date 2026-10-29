@@ -5,7 +5,7 @@ $input a_texcoord0, a_position
 $output v_posTime, v_texcoord0
 
 #include <bgfx_shader.sh>
-#include <newb/main.sh>
+#include <grafika/main.sh>
 
 //uniform vec4 FogColor;
 uniform vec4 ViewPositionAndTime;

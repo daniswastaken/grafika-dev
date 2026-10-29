@@ -7,7 +7,7 @@
 
 // simple clouds 2D noise
 float cloudNoise2D(vec2 p, highp float t, float rain) {
-  t *= NL_CLOUD1_SPEED;
+  t *= GS_CLOUD1_SPEED;
   p += t;
   p.y += 3.0*sin(0.3*p.x + 0.1*t);
 
@@ -27,8 +27,8 @@ float cloudNoise2D(vec2 p, highp float t, float rain) {
 }
 
 // simple clouds
-vec4 renderCloudsSimple(nl_skycolor skycol, vec3 pos, highp float t, float rain) {
-  pos.xz *= NL_CLOUD1_SCALE;
+vec4 renderCloudsSimple(gs_skycolor skycol, vec3 pos, highp float t, float rain) {
+  pos.xz *= GS_CLOUD1_SCALE;
   float d = cloudNoise2D(pos.xz, t, rain);
   vec4 col = vec4(skycol.horizonEdge + skycol.zenith, smoothstep(0.1,0.6,d));
   col.rgb += 1.5*dot(col.rgb, vec3(0.3,0.4,0.3))*smoothstep(0.6,0.2,d)*col.a;
@@ -115,13 +115,13 @@ vec4 renderClouds(vec2 p, float t, float rain, vec3 horizonCol, vec3 zenithCol, 
 
   // layer 1
   float a = cloudsNoiseVr(p, t);
-  float b = cloudsNoiseVr(p + NL_CLOUD3_SHADOW_OFFSET*scale, t);
+  float b = cloudsNoiseVr(p + GS_CLOUD3_SHADOW_OFFSET*scale, t);
 
   // layer 2
   p = 1.4 * p.yx + vec2(7.8, 9.2);
   t *= 0.5;
   float c = cloudsNoiseVr(p, t);
-  float d = cloudsNoiseVr(p + NL_CLOUD3_SHADOW_OFFSET*scale, t);
+  float d = cloudsNoiseVr(p + GS_CLOUD3_SHADOW_OFFSET*scale, t);
 
   // higher = less clouds thickness
   // lower separation betwen x & y = sharper
@@ -143,24 +143,24 @@ vec4 renderClouds(vec2 p, float t, float rain, vec3 horizonCol, vec3 zenithCol, 
 }
 
 // aurora is rendered on clouds layer
-#ifdef NL_AURORA
+#ifdef GS_AURORA
 vec4 renderAurora(vec3 p, float t, float rain, vec3 FOG_COLOR) {
-  t *= NL_AURORA_VELOCITY;
-  p.xz *= NL_AURORA_SCALE;
+  t *= GS_AURORA_VELOCITY;
+  p.xz *= GS_AURORA_SCALE;
   p.xz += 0.05*sin(p.x*4.0 + 20.0*t);
 
   float d0 = sin(p.x*0.1 + t + sin(p.z*0.2));
   float d1 = sin(p.z*0.1 - t + sin(p.x*0.2));
   float d2 = sin(p.z*0.1 + 1.0*sin(d0 + d1*2.0) + d1*2.0 + d0*1.0);
   d0 *= d0; d1 *= d1; d2 *= d2;
-  d2 = d0/(1.0 + d2/NL_AURORA_WIDTH);
+  d2 = d0/(1.0 + d2/GS_AURORA_WIDTH);
 
   float mask = (1.0-0.8*rain)*max(1.0 - 4.0*max(FOG_COLOR.b, FOG_COLOR.g), 0.0);
-  return vec4(NL_AURORA*mix(NL_AURORA_COL1,NL_AURORA_COL2,d1),1.0)*d2*mask;
+  return vec4(GS_AURORA*mix(GS_AURORA_COL1,GS_AURORA_COL2,d1),1.0)*d2*mask;
 }
 #endif
 
-vec4 nlCloudAuroraReflection(nl_skycolor skycol, nl_environment env, vec3 viewDir, vec3 wPos, vec3 CAMERA_POS, highp float t) {
+vec4 gsCloudAuroraReflection(gs_skycolor skycol, gs_environment env, vec3 viewDir, vec3 wPos, vec3 CAMERA_POS, highp float t) {
   vec2 cloudPos = wPos.xz;
   cloudPos += (187.0-(wPos.y+CAMERA_POS.y))*viewDir.xz/viewDir.y;
   float fade = clamp(2.0 - 0.005*length(cloudPos), 0.0, 1.0);
@@ -168,13 +168,13 @@ vec4 nlCloudAuroraReflection(nl_skycolor skycol, nl_environment env, vec3 viewDi
 
   vec4 refl = vec4_splat(0.0);
 
-  #ifdef NL_AURORA
+  #ifdef GS_AURORA
     vec4 aurora = renderAurora(cloudPos.xyy, t, env.rainFactor, env.fogCol);
     aurora.a *= fade;
     refl = vec4(2.0*aurora.rgb*aurora.a, aurora.a);
   #endif
 
-  #if NL_CLOUD_TYPE == 1
+  #if GS_CLOUD_TYPE == 1
     vec4 clouds = renderCloudsSimple(skycol, cloudPos.xyy, t, env.rainFactor);
     clouds.a *= fade;
     refl = vec4(mix(refl.rgb, clouds.rgb, clouds.a), min(refl.a + clouds.a, 1.0));

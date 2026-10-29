@@ -1,21 +1,21 @@
 #ifndef FOG_H
 #define FOG_H
 
-float nlRenderFogFade(float relativeDist, vec3 FOG_COLOR, vec2 FOG_CONTROL) {
-  #ifdef NL_FOG
+float gsRenderFogFade(float relativeDist, vec3 FOG_COLOR, vec2 FOG_CONTROL) {
+  #ifdef GS_FOG
     float fade = smoothstep(FOG_CONTROL.x, FOG_CONTROL.y, relativeDist);
 
     // misty effect
-    float density = NL_MIST_DENSITY*(19.0 - 18.0*FOG_COLOR.g);
+    float density = GS_MIST_DENSITY*(19.0 - 18.0*FOG_COLOR.g);
     fade += (1.0-fade)*(0.3-0.3*exp(-relativeDist*relativeDist*density));
 
-    return NL_FOG * fade;
+    return GS_FOG * fade;
   #else
     return 0.0;
   #endif
 }
 
-float nlRenderGodRayIntensity(vec3 cPos, vec3 worldPos, float t, vec2 uv1, float relativeDist, vec3 FOG_COLOR) {
+float gsRenderGodRayIntensity(vec3 cPos, vec3 worldPos, float t, vec2 uv1, float relativeDist, vec3 FOG_COLOR) {
   // offset wPos (only works upto 16 blocks)
   vec3 offset = cPos - 16.0*fract(worldPos*0.0625);
   offset = abs(2.0*fract(offset*0.0625)-1.0);

@@ -5,7 +5,7 @@
 #include <bgfx_shader.sh>
 
 #ifndef INSTANCING
-  #include <newb/main.sh>
+  #include <grafika/main.sh>
   uniform vec4 TimeOfDay;
   uniform vec4 Day;
   uniform vec4 FogColor;
@@ -16,7 +16,7 @@ void main() {
   #ifndef INSTANCING
     vec3 viewDir = normalize(v_worldPos);
 
-    nl_environment env;
+    gs_environment env;
     env.end = false;
     env.nether = false;
     env.underwater = v_underwaterRainTimeDay.x > 0.5;
@@ -25,14 +25,14 @@ void main() {
     env.fogCol = FogColor.rgb;
     env = calculateSunParams(env, TimeOfDay.x, Day.x);
 
-    nl_skycolor skycol = nlOverworldSkyColors(env);
+    gs_skycolor skycol = gsOverworldSkyColors(env);
 
-    vec3 skyColor = nlRenderSky(skycol, env, -viewDir, v_underwaterRainTimeDay.z, true);
-    #ifdef NL_SHOOTING_STAR
-      skyColor += NL_SHOOTING_STAR*nlRenderShootingStar(viewDir, env.fogCol, v_underwaterRainTimeDay.z);
+    vec3 skyColor = gsRenderSky(skycol, env, -viewDir, v_underwaterRainTimeDay.z, true);
+    #ifdef GS_SHOOTING_STAR
+      skyColor += GS_SHOOTING_STAR*gsRenderShootingStar(viewDir, env.fogCol, v_underwaterRainTimeDay.z);
     #endif
-    #ifdef NL_GALAXY_STARS
-      skyColor += NL_GALAXY_STARS*nlRenderGalaxy(viewDir, env.fogCol, env, v_underwaterRainTimeDay.z);
+    #ifdef GS_GALAXY_STARS
+      skyColor += GS_GALAXY_STARS*gsRenderGalaxy(viewDir, env.fogCol, env, v_underwaterRainTimeDay.z);
     #endif
 
     skyColor = colorCorrection(skyColor);

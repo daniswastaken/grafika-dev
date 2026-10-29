@@ -1,5 +1,5 @@
-#ifndef NL_MAIN_H
-#define NL_MAIN_H
+#ifndef GS_MAIN_H
+#define GS_MAIN_H
 
 // Merges all functions into a single file and provides a global config.
 // shaderc will optimize away unused functions per material.

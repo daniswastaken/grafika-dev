@@ -2,7 +2,7 @@ $input v_color0, v_fog, v_light
 
 #include <bgfx_shader.sh>
 #include <MinecraftRenderer.Materials/ActorUtil.dragonh>
-#include <newb/main.sh>
+#include <grafika/main.sh>
 
 uniform vec4 ChangeColor;
 uniform vec4 OverlayColor;

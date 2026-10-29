@@ -3,13 +3,13 @@ $input a_color0, a_position
   $input i_data0, i_data1, i_data2, i_data3
 #endif
 $output v_color0
-#include <newb/config.h>
-#if NL_CLOUD_TYPE >= 2
+#include <grafika/config.h>
+#if GS_CLOUD_TYPE >= 2
   $output v_color1, v_color2, v_fogColor
 #endif
 
 #include <bgfx_shader.sh>
-#include <newb/main.sh>
+#include <grafika/main.sh>
 
 // uniform vec4 CloudColor;
 uniform vec4 FogColor;
@@ -33,7 +33,7 @@ void main() {
   float t = ViewPositionAndTime.w;
   float rain = detectRain(FogAndDistanceControl.xyz);
 
-  nl_environment env;
+  gs_environment env;
   env.end = false;
   env.nether = false;
   env.underwater = false;
@@ -41,30 +41,30 @@ void main() {
   env.fogCol = FogColor.rgb;
   env = calculateSunParams(env, TimeOfDay.x, Day.x);
 
-  nl_skycolor skycol = nlOverworldSkyColors(env);
+  gs_skycolor skycol = gsOverworldSkyColors(env);
   vec3 pos = a_position;
   vec3 worldPos;
 
-  #if NL_CLOUD_TYPE <= 2
+  #if GS_CLOUD_TYPE <= 2
 
     vec4 color;
 
-    #if NL_CLOUD_TYPE == 0
-      pos.y *= (NL_CLOUD0_THICKNESS + rain*(NL_CLOUD0_RAIN_THICKNESS - NL_CLOUD0_THICKNESS));
+    #if GS_CLOUD_TYPE == 0
+      pos.y *= (GS_CLOUD0_THICKNESS + rain*(GS_CLOUD0_RAIN_THICKNESS - GS_CLOUD0_THICKNESS));
       worldPos = mul(model, vec4(pos, 1.0)).xyz;
 
       color.rgb = skycol.zenith + skycol.horizonEdge;
       color.rgb += dot(color.rgb, vec3(0.3,0.4,0.3))*a_position.y;
       color.rgb *= 1.0 - 0.8*rain;
       color.rgb = colorCorrection(color.rgb);
-      color.a = NL_CLOUD0_OPACITY * fog_fade(worldPos.xyz);
+      color.a = GS_CLOUD0_OPACITY * fog_fade(worldPos.xyz);
 
       // clouds.png has two non-overlaping layers:
       // r=unused, g=layers, b=reference, a=unused
       // g=0 (layer 0), g=1 (layer 1)
       bool isL2 = a_color0.g > 0.5 * a_color0.b;
       if (isL2) {
-        #ifdef NL_CLOUD0_MULTILAYER
+        #ifdef GS_CLOUD0_MULTILAYER
           worldPos.y += 64.0;
         #else
           worldPos = vec3(0.0,0.0,0.0);
@@ -76,7 +76,7 @@ void main() {
       worldPos.xyz = mul(model, vec4(pos, 1.0)).xyz;
 
       float fade = fog_fade(worldPos.xyz);
-      #if NL_CLOUD_TYPE == 1
+      #if GS_CLOUD_TYPE == 1
         // make cloud plane spherical
         float len = length(worldPos.xz)*0.01;
         worldPos.y -= len*len*clamp(0.2*worldPos.y, -1.0, 1.0);
@@ -87,17 +87,17 @@ void main() {
         color = renderCloudsSimple(skycol, cloudPos, t, rain);
 
         // cloud depth
-        worldPos.y -= NL_CLOUD1_DEPTH*color.a*3.3;
+        worldPos.y -= GS_CLOUD1_DEPTH*color.a*3.3;
 
-        color.a *= NL_CLOUD1_OPACITY;
+        color.a *= GS_CLOUD1_OPACITY;
 
-        #ifdef NL_AURORA
+        #ifdef GS_AURORA
           color += renderAurora(cloudPos, t, rain, FogColor.rgb)*(1.0-color.a);
         #endif
 
         color.a *= fade;
         color.rgb = colorCorrection(color.rgb);
-      #else // NL_CLOUD_TYPE 2
+      #else // GS_CLOUD_TYPE 2
         v_fogColor = FogColor.rgb;
         v_color1 = vec4(skycol.zenith, rain);
         v_color2 = vec4(skycol.horizonEdge, ViewPositionAndTime.w);

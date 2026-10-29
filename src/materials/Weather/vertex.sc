@@ -6,7 +6,7 @@ $output v_fog, v_occlusionUVHeight, v_texcoord0, v_texcoord1
 
 #include <bgfx_shader.sh>
 #include <MinecraftRenderer.Materials/FogUtil.dragonh>
-#include <newb/config.h>
+#include <grafika/config.h>
 
 uniform vec4 Dimensions;
 uniform vec4 ViewPosition;
@@ -34,10 +34,10 @@ void main() {
 
   bool isRain = (UVOffsetAndScale.w > 3.8*UVOffsetAndScale.z) && Dimensions.x < 0.1;
   vec3 velocity = Velocity.xyz;
-  vec2 dimensions = NL_WEATHER_PARTICLE_SIZE*Dimensions.xy;
+  vec2 dimensions = GS_WEATHER_PARTICLE_SIZE*Dimensions.xy;
 
   if (isRain) {
-    velocity.x *= NL_WEATHER_RAIN_SLANT;
+    velocity.x *= GS_WEATHER_RAIN_SLANT;
     worldPos.x -= worldPos.y*velocity.x;
   }
 

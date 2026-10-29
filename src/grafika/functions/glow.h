@@ -28,9 +28,9 @@ vec3 glowDetectD(sampler2D tex, vec2 uv, vec2 offset, vec2 st) {
   return glowDetectC(tex, uv+offset);
 }
 
-vec3 nlGlow(sampler2D tex, vec2 uv, float shimmer) {
+vec3 gsGlow(sampler2D tex, vec2 uv, float shimmer) {
   vec3 glow = glowDetectC(tex, uv);
-  #ifdef NL_GLOW_LEAK
+  #ifdef GS_GLOW_LEAK
     // glow leak is done by interpolating 8 surrounding pixels
     // c3 c4 c5
     // c2    c6
@@ -71,26 +71,26 @@ vec3 nlGlow(sampler2D tex, vec2 uv, float shimmer) {
 
     // apply attuenation and add to glow
     g = ((g*0.7 + 0.2)*g + 0.1)*g;
-    glow = max(glow, g*NL_GLOW_LEAK);
+    glow = max(glow, g*GS_GLOW_LEAK);
   #endif
 
-  #ifdef NL_GLOW_SHIMMER
+  #ifdef GS_GLOW_SHIMMER
     glow *= shimmer;
   #endif
 
-  return glow * NL_GLOW_TEX;
+  return glow * GS_GLOW_TEX;
 }
 
-#ifdef NL_GLOW_SHIMMER
-float nlGlowShimmer(vec3 cPos, float t) {
-  float shimmer = sin(0.7*dot(cPos, vec3(1.0, 1.0, 1.0)) - NL_GLOW_SHIMMER_SPEED*t);
+#ifdef GS_GLOW_SHIMMER
+float gsGlowShimmer(vec3 cPos, float t) {
+  float shimmer = sin(0.7*dot(cPos, vec3(1.0, 1.0, 1.0)) - GS_GLOW_SHIMMER_SPEED*t);
   shimmer = sin(1.2*shimmer + 0.7*dot(cPos, vec3(-1.0, -1.0, 1.0)));
   shimmer *= shimmer;
-  return mix(1.0, shimmer*shimmer, NL_GLOW_SHIMMER);
+  return mix(1.0, shimmer*shimmer, GS_GLOW_SHIMMER);
 }
 #endif
 
-vec4 nlGlint(vec4 light, vec4 layerUV, sampler2D glintTexture, vec4 glintColor, vec4 tileLightColor, vec4 albedo) {
+vec4 gsGlint(vec4 light, vec4 layerUV, sampler2D glintTexture, vec4 glintColor, vec4 tileLightColor, vec4 albedo) {
   float d = fract(dot(albedo.rgb, vec3_splat(4.0)));
 
   vec4 tex1 = texture2D(glintTexture, fract(layerUV.xy+0.1*d)).rgbr;

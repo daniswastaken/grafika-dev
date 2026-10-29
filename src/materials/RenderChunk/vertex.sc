@@ -5,7 +5,7 @@ $input a_color0, a_position, a_texcoord0, a_texcoord1
 $output v_color0, v_color1, v_fog, v_refl, v_texcoord0, v_lightmapUV, v_extra
 
 #include <bgfx_shader.sh>
-#include <newb/main.sh>
+#include <grafika/main.sh>
 
 uniform vec4 RenderChunkFogAlpha;
 uniform vec4 FogAndDistanceControl;
@@ -30,8 +30,8 @@ void main() {
 
   #if !(defined(DEPTH_ONLY_OPAQUE) || defined(DEPTH_ONLY) || defined(INSTANCING))
 
-  #ifdef NL_CHUNK_LOAD_ANIM
-    worldPos.y -= NL_CHUNK_LOAD_ANIM*RenderChunkFogAlpha.x*RenderChunkFogAlpha.x*RenderChunkFogAlpha.x;
+  #ifdef GS_CHUNK_LOAD_ANIM
+    worldPos.y -= GS_CHUNK_LOAD_ANIM*RenderChunkFogAlpha.x*RenderChunkFogAlpha.x*RenderChunkFogAlpha.x;
   #endif
 
   #ifdef RENDER_AS_BILLBOARDS
@@ -90,8 +90,8 @@ void main() {
     bool isTree = false;
   #endif
 
-  nl_environment env = nlDetectEnvironment(DimensionID.x, TimeOfDay.x, Day.x, FogColor.rgb, FogAndDistanceControl.xyz);
-  nl_skycolor skycol = nlSkyColors(env);
+  gs_environment env = gsDetectEnvironment(DimensionID.x, TimeOfDay.x, Day.x, FogColor.rgb, FogAndDistanceControl.xyz);
+  gs_skycolor skycol = gsSkyColors(env);
 
   // time
   highp float t = ViewPositionAndTime.w;
@@ -109,11 +109,11 @@ void main() {
     }
   #endif
 
-  vec3 torchColor; // modified by nl_lighting
-  vec3 light = nlLighting(s_LightMapTexture, skycol, env, worldPos, torchColor, a_color0.rgb, uv1, lit, isTree, shade, t, FogAndDistanceControl.z, TimeOfDay.x, CameraPosition.xyz);
+  vec3 torchColor; // modified by gs_lighting
+  vec3 light = gsLighting(s_LightMapTexture, skycol, env, worldPos, torchColor, a_color0.rgb, uv1, lit, isTree, shade, t, FogAndDistanceControl.z, TimeOfDay.x, CameraPosition.xyz);
 
-  #if defined(ALPHA_TEST) && (defined(NL_PLANTS_WAVE) || defined(NL_LANTERN_WAVE)) && !defined(RENDER_AS_BILLBOARDS)
-    nlWave(worldPos, light, env.rainFactor, uv1, lit, uv0, bPos, a_color0, cPos, tiledCpos, t, s_MatTexture, isColored, camDis, isTree);
+  #if defined(ALPHA_TEST) && (defined(GS_PLANTS_WAVE) || defined(GS_LANTERN_WAVE)) && !defined(RENDER_AS_BILLBOARDS)
+    gsWave(worldPos, light, env.rainFactor, uv1, lit, uv0, bPos, a_color0, cPos, tiledCpos, t, s_MatTexture, isColored, camDis, isTree);
   #endif
 
   // loading chunks
@@ -124,11 +124,11 @@ void main() {
   // CRITICAL: isSkyPlane MUST be false here to prevent the volumetric
   // black hole (Interstellar-style feature) from bleeding through solid
   // terrain when the camera moves (the "see-through" terrain bug). 
-  // Optimization logic remains in sky.h handled by NL_CINEMATIC_SKY.
-  fogColor.rgb = nlRenderSky(skycol, env, viewDir, t, false);
-  fogColor.a = nlRenderFogFade(relativeDist, FogColor.rgb, FogAndDistanceControl.xy);
-  #ifdef NL_GODRAY
-    fogColor.a = mix(fogColor.a, 1.0, min(NL_GODRAY*nlRenderGodRayIntensity(cPos, worldPos, t, uv1, relativeDist, FogColor.rgb), 1.0));
+  // Optimization logic remains in sky.h handled by GS_CINEMATIC_SKY.
+  fogColor.rgb = gsRenderSky(skycol, env, viewDir, t, false);
+  fogColor.a = gsRenderFogFade(relativeDist, FogColor.rgb, FogAndDistanceControl.xy);
+  #ifdef GS_GODRAY
+    fogColor.a = mix(fogColor.a, 1.0, min(GS_GODRAY*gsRenderGodRayIntensity(cPos, worldPos, t, uv1, relativeDist, FogColor.rgb), 1.0));
   #endif
 
   if (env.nether) {
@@ -136,8 +136,8 @@ void main() {
     fogColor.rgb = colorCorrectionInv(FogColor.rgb);
   }
 
-  #ifdef NL_CLOUDY_FOG
-    float fg = smoothstep(0.0, 1.0-NL_CLOUDY_FOG, relativeDist);
+  #ifdef GS_CLOUDY_FOG
+    float fg = smoothstep(0.0, 1.0-GS_CLOUDY_FOG, relativeDist);
     fg *= sin(5.0*viewDir.y + 2.0*viewDir.x - 0.1*t);
     fg *= sin(5.0*viewDir.y - 2.0*viewDir.x + viewDir.z + 0.1*t);
     fogColor.a += (1.0-fogColor.a)*fg*fg;
@@ -149,41 +149,41 @@ void main() {
     color.a = mix(color.a, 1.0, 0.5*clamp(relativeDist, 0.0, 1.0));
     if (a_color0.b > 0.3 && a_color0.a < 0.95) {
       water = 1.0;
-      refl = nlWater(color, worldPos, skycol, env, a_color0, viewDir, cPos, tiledCpos, gPos, CameraPosition.xyz, light, torchColor, lit, bPos.y, camDis, t);
+      refl = gsWater(color, worldPos, skycol, env, a_color0, viewDir, cPos, tiledCpos, gPos, CameraPosition.xyz, light, torchColor, lit, bPos.y, camDis, t);
     } else {
-      refl = nlRefl(color, skycol, env, viewDir, worldPos, tiledCpos, CameraPosition.xyz, torchColor, lit, camDis, FogAndDistanceControl.z, t);
+      refl = gsRefl(color, skycol, env, viewDir, worldPos, tiledCpos, CameraPosition.xyz, torchColor, lit, camDis, FogAndDistanceControl.z, t);
     }
   #else
-    refl = nlRefl(color, skycol, env, viewDir, worldPos, tiledCpos, CameraPosition.xyz, torchColor, lit, camDis, FogAndDistanceControl.z, t);
+    refl = gsRefl(color, skycol, env, viewDir, worldPos, tiledCpos, CameraPosition.xyz, torchColor, lit, camDis, FogAndDistanceControl.z, t);
   #endif
 
   vec4 pos = mul(u_viewProj, vec4(worldPos, 1.0));
-  #ifdef NL_RAIN_MIST_OPACITY
+  #ifdef GS_RAIN_MIST_OPACITY
     if (env.rainFactor > 0.0) {
-      float humidAir = env.rainFactor*lit.y*lit.y*nlWindblow(pos.xyz, t);
-      fogColor.a = mix(fogColor.a, 1.0, humidAir*NL_RAIN_MIST_OPACITY);
+      float humidAir = env.rainFactor*lit.y*lit.y*gsWindblow(pos.xyz, t);
+      fogColor.a = mix(fogColor.a, 1.0, humidAir*GS_RAIN_MIST_OPACITY);
     }
   #endif
 
   if (env.underwater) {
-    nlUnderwaterLighting(light, pos.xyz, lit, uv1, tiledCpos, cPos, t, skycol.horizon);
+    gsUnderwaterLighting(light, pos.xyz, lit, uv1, tiledCpos, cPos, t, skycol.horizon);
   }
 
   color.rgb *= light;
 
-  #if defined(NL_GLOW_SHIMMER) && !(defined(RENDER_AS_BILLBOARDS) || defined(SEASONS))
-    float shimmer = nlGlowShimmer(cPos, t);
+  #if defined(GS_GLOW_SHIMMER) && !(defined(RENDER_AS_BILLBOARDS) || defined(SEASONS))
+    float shimmer = gsGlowShimmer(cPos, t);
   #else
     float shimmer = 1.0;
   #endif
 
-  #ifdef NL_LAVA_NOISE
+  #ifdef GS_LAVA_NOISE
     bool isc = (a_color0.r+a_color0.g+a_color0.b) > 2.999;
     bool isb = bPos.y < 0.891 && bPos.y > 0.889;
     if (isc && isb && (uv1.x > 0.81 && uv1.x < 0.876) && uv0.y > 0.5) {
-      vec4 lava = nlLavaNoise(gPos, t);
-      #ifdef NL_LAVA_NOISE_BUMP
-        worldPos.y += NL_LAVA_NOISE_BUMP*lava.a;
+      vec4 lava = gsLavaNoise(gPos, t);
+      #ifdef GS_LAVA_NOISE_BUMP
+        worldPos.y += GS_LAVA_NOISE_BUMP*lava.a;
       #endif
       color.rgb *= lava.rgb;
     }

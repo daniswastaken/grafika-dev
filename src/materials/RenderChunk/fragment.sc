@@ -1,7 +1,7 @@
 $input v_color0, v_color1, v_fog, v_refl, v_texcoord0, v_lightmapUV, v_extra
 
 #include <bgfx_shader.sh>
-#include <newb/main.sh>
+#include <grafika/main.sh>
 
 SAMPLER2D_AUTOREG(s_MatTexture);
 SAMPLER2D_AUTOREG(s_SeasonsTexture);
@@ -26,13 +26,13 @@ void main() {
     diffuse.rgb *= mix(vec3(1.0,1.0,1.0), texture2D(s_SeasonsTexture, v_color1.xy).rgb * 2.0, v_color1.z);
   #endif
 
-  vec3 glow = nlGlow(s_MatTexture, v_texcoord0, v_extra.a);
+  vec3 glow = gsGlow(s_MatTexture, v_texcoord0, v_extra.a);
 
   diffuse.rgb *= diffuse.rgb;
 
   #if defined(TRANSPARENT) && !(defined(SEASONS) || defined(RENDER_AS_BILLBOARDS))
     if (v_extra.b > 0.9) {
-      diffuse.rgb = vec3_splat(1.0 - NL_WATER_TEX_OPACITY*(1.0 - diffuse.b*1.8));
+      diffuse.rgb = vec3_splat(1.0 - GS_WATER_TEX_OPACITY*(1.0 - diffuse.b*1.8));
       diffuse.a = color.a;
     }
   #else

@@ -1,5 +1,5 @@
 If:
-  PathMatch: src/newb/functions/.*
+  PathMatch: src/grafika/functions/.*
 
 CompileFlags:
   Add: [--include=../config.h, --include=../../../.lsp/bgfx.h]

@@ -7,7 +7,7 @@ $output v_color0, v_fog, v_light
 
 #include <bgfx_shader.sh>
 #include <MinecraftRenderer.Materials/TAAUtil.dragonh>
-#include <newb/main.sh>
+#include <grafika/main.sh>
 
 uniform vec4 FogControl;
 uniform vec4 FogColor;
@@ -36,8 +36,8 @@ void main() {
   vec4 position = jitterVertexPosition(wpos);
 
   #if !(defined(DEPTH_ONLY) || defined(INSTANCING))
-    nl_environment env = nlDetectEnvironment(DimensionID.x, TimeOfDay.x, Day.x, FogColor.rgb, FogControl.xyz);
-    nl_skycolor skycol = nlSkyColors(env);
+    gs_environment env = gsDetectEnvironment(DimensionID.x, TimeOfDay.x, Day.x, FogColor.rgb, FogControl.xyz);
+    gs_skycolor skycol = gsSkyColors(env);
 
     float relativeDist = position.z/FogControl.z;
 
@@ -45,15 +45,15 @@ void main() {
     viewDir.y = -viewDir.y;
 
     vec4 fogColor;
-    fogColor.rgb = nlRenderSky(skycol, env, viewDir, ViewPositionAndTime.w, false);
-    fogColor.a = nlRenderFogFade(relativeDist, FogColor.rgb, FogControl.xy);
+    fogColor.rgb = gsRenderSky(skycol, env, viewDir, ViewPositionAndTime.w, false);
+    fogColor.a = gsRenderFogFade(relativeDist, FogColor.rgb, FogControl.xy);
 
     if (env.nether) {
       // blend fog with void color
       fogColor.rgb = colorCorrectionInv(FogColor.rgb);
     }
 
-    vec3 light = nlEntityLighting(skycol, env, a_position, a_normal, wpos.xyz, World, TileLightColor, OverlayColor, skycol.horizonEdge, ViewPositionAndTime.w, TimeOfDay.x, RenderDistance.x, CameraPosition.xyz);
+    vec3 light = gsEntityLighting(skycol, env, a_position, a_normal, wpos.xyz, World, TileLightColor, OverlayColor, skycol.horizonEdge, ViewPositionAndTime.w, TimeOfDay.x, RenderDistance.x, CameraPosition.xyz);
 
     v_color0 = a_color0;
     v_fog = fogColor;

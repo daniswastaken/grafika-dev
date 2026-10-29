@@ -8,7 +8,7 @@ $output v_color0, v_fog, v_light, v_texcoord0, v_edgemap
 #include <bgfx_shader.sh>
 #include <MinecraftRenderer.Materials/DynamicUtil.dragonh>
 #include <MinecraftRenderer.Materials/TAAUtil.dragonh>
-#include <newb/main.sh>
+#include <grafika/main.sh>
 
 uniform vec4 OverlayColor;
 uniform vec4 TileLightColor;
@@ -42,8 +42,8 @@ void main() {
   vec4 position = jitterVertexPosition(worldPosition);
 
   #if !(defined(DEPTH_ONLY_OPAQUE) || defined(DEPTH_ONLY) || defined(INSTANCING))
-    nl_environment env = nlDetectEnvironment(DimensionID.x, TimeOfDay.x, Day.x, FogColor.rgb, FogControl.xyz);
-    nl_skycolor skycol = nlSkyColors(env);
+    gs_environment env = gsDetectEnvironment(DimensionID.x, TimeOfDay.x, Day.x, FogColor.rgb, FogControl.xyz);
+    gs_skycolor skycol = gsSkyColors(env);
 
     float relativeDist = position.z/FogControl.z;
 
@@ -51,21 +51,21 @@ void main() {
     viewDir.y = -viewDir.y;
 
     vec4 fogColor;
-    fogColor.rgb = nlRenderSky(skycol, env, viewDir, ViewPositionAndTime.w, false);
-    fogColor.a = nlRenderFogFade(relativeDist, FogColor.rgb, FogControl.xy);
+    fogColor.rgb = gsRenderSky(skycol, env, viewDir, ViewPositionAndTime.w, false);
+    fogColor.a = gsRenderFogFade(relativeDist, FogColor.rgb, FogControl.xy);
 
     if (env.nether) {
       // blend fog with void color
       fogColor.rgb = colorCorrectionInv(FogColor.rgb);
     }
 
-    vec3 light = nlEntityLighting(skycol, env, a_position, a_normal, worldPosition.xyz, World, TileLightColor, OverlayColor, skycol.horizonEdge, ViewPositionAndTime.w, TimeOfDay.x, RenderDistance.x, CameraPosition.xyz);
+    vec3 light = gsEntityLighting(skycol, env, a_position, a_normal, worldPosition.xyz, World, TileLightColor, OverlayColor, skycol.horizonEdge, ViewPositionAndTime.w, TimeOfDay.x, RenderDistance.x, CameraPosition.xyz);
 
     v_texcoord0 = texcoord0;
     v_color0 = a_color0;
     v_fog = fogColor;
-    #ifdef NL_ENTITY_EDGE_HIGHLIGHT
-      v_edgemap = nlEntityEdgeHighlightPreprocess(texcoord0);
+    #ifdef GS_ENTITY_EDGE_HIGHLIGHT
+      v_edgemap = gsEntityEdgeHighlightPreprocess(texcoord0);
     #else
       v_edgemap = vec4_splat(0.0);
     #endif

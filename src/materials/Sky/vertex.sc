@@ -6,7 +6,7 @@
 #include <bgfx_shader.sh>
 
 #ifndef INSTANCING
-  #include <newb/main.sh>
+  #include <grafika/main.sh>
 
   //uniform vec4 SkyColor;
   uniform vec4 FogColor;

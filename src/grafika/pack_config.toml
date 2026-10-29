@@ -1,0 +1,49 @@
+name = "§lGrafika§r §fShader §l§dv2.6.1 Pro§r"
+version = [2, 6, 1]
+min_supported_mc_version = [1, 26, 50]
+description = '''
+§b§lAn open-source anime-style shader pack.§r
+§eRequires §6BetterRenderDragon (BRD) §eor §6Minecraft Patched.
+%v
+'''
+authors = ["daniswastaken", "devendrn"]
+url = "https://github.com/daniswastaken/grafika"
+uuid = "a794ebf9-e3ba-4e0a-898e-69d017668eb2" # Use https://www.uuidgenerator.net/version4
+materials = ["Sky", "RenderChunk", "Actor", "ActorGlint", "EndSky", "Clouds", "SunMoon", "Weather", "ItemInHandTextured", "ItemInHandColor", "ItemInHandColorGlint", "Stars"]
+contributors = []
+
+[info] 
+copyright = '''
+Copyright © 2026 %a, and "Grafika Shader" Contributors
+
+This compiled "Grafika Shader" resource pack (source code: https://github.com/daniswastaken/grafika under MIT License) is licensed under CC BY-ND 4.0 (https://creativecommons.org/licenses/by-nd/4.0/). Redistribute only unmodified copies with proper attribution to "Grafika Shader" and variant creators (if any). Do not distribute derivatives.
+
+You can compile the shader from source and distribute the result under your own terms (compatible with the MIT License).
+
+Contact (Discord Server): https://discord.gg/grafika
+''' # %a = authors
+credits = '''
+'''
+
+# subpacks are arranged in left to right order
+# right-most subpack is enabled by default
+[[subpack]]
+define = "REALISTIC_CLOUDS"
+materials = ["Clouds", "RenderChunk"]
+description = '''
+Realistic clouds
+'''
+
+[[subpack]]
+define = "ROUNDED_CLOUDS"
+materials = ["Clouds"]
+description = '''
+Rounded Clouds
+'''
+
+[[subpack]]
+define = "BOX_CLOUDS"
+materials = ["Clouds", "RenderChunk"]
+description = '''
+Box Clouds
+'''

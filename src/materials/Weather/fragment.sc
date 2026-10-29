@@ -1,7 +1,7 @@
 $input v_fog, v_occlusionUVHeight, v_texcoord0, v_texcoord1
 
 #include <bgfx_shader.sh>
-#include <newb/main.sh>
+#include <grafika/main.sh>
 
 uniform vec4 UVOffsetAndScale;
 uniform vec4 OcclusionHeightOffset;
@@ -46,7 +46,7 @@ void main() {
     lightingUV = vec2(occlLuminance * (1.0 - mixAmount), 1.0);
   }
 
-  #ifdef NL_WEATHER_SPECK
+  #ifdef GS_WEATHER_SPECK
     vec2 gv = 2.0*v_texcoord1 - 1.0;
     gv = 1.0 - gv*gv;
     float g = gv.x*gv.y;
@@ -57,7 +57,7 @@ void main() {
     vec4 color = texture2D(s_WeatherTexture, UVOffsetAndScale.xy + 0.5*UVOffsetAndScale.zw);
     color.a = g*g;
 
-    diffuse = mix(diffuse, color, NL_WEATHER_SPECK);
+    diffuse = mix(diffuse, color, GS_WEATHER_SPECK);
   #endif 
 
   vec3 light = texture2D(s_LightingTexture, lightingUV).rgb;

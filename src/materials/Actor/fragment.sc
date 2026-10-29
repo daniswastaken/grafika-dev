@@ -2,7 +2,7 @@ $input v_color0, v_fog, v_light, v_texcoord0, v_edgemap
 
 #include <bgfx_shader.sh>
 #include <MinecraftRenderer.Materials/ActorUtil.dragonh>
-#include <newb/main.sh>
+#include <grafika/main.sh>
 
 uniform vec4 ColorBased;
 uniform vec4 ChangeColor;
@@ -54,7 +54,7 @@ void main() {
 
   vec4 light = v_light;
   #if defined(EMISSIVE) || defined(EMISSIVE_ONLY)
-    light.rgb = max(light.rgb, 2.0*NL_GLOW_TEX*(1.0-albedo.a)); // glow effect
+    light.rgb = max(light.rgb, 2.0*GS_GLOW_TEX*(1.0-albedo.a)); // glow effect
   #endif
 
   albedo = applyLighting(albedo, light);
@@ -63,8 +63,8 @@ void main() {
     albedo = applyHudOpacity(albedo, HudOpacity.x);
   #endif
 
-  #ifdef NL_ENTITY_EDGE_HIGHLIGHT
-    albedo.rgb *= nlEntityEdgeHighlight(v_edgemap);
+  #ifdef GS_ENTITY_EDGE_HIGHLIGHT
+    albedo.rgb *= gsEntityEdgeHighlight(v_edgemap);
   #endif
 
   albedo.rgb = mix(albedo.rgb, v_fog.rgb, v_fog.a);

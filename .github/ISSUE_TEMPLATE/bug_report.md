@@ -21,7 +21,7 @@ Steps to reproduce the behavior:
 Add screenshots to help explain your problem.
 
 **More info (please complete the following information):**
- - Variant name and version: [e.g. Newb X Legacy v15.58]
+ - Variant name and version: [e.g. Grafika Shader v2.6.1]
  - Minecraft Version: [e.g. 1.21.43]
  - Platform: [e.g. Android, Windows, iOS]
  - GPU (optional): [e.g. Adreno 505]

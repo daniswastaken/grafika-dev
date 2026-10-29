@@ -5,7 +5,7 @@ $input v_texcoord0, v_posTime
 #include <bgfx_shader.sh>
 
 #ifndef INSTANCING
-  #include <newb/main.sh>
+  #include <grafika/main.sh>
 
   SAMPLER2D_AUTOREG(s_SkyTexture);
 #endif

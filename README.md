@@ -80,7 +80,7 @@ options:
 
 ### Configuration
 
-Pack identity and support floor live in `src/newb/pack_config.toml`:
+Pack identity and support floor live in `src/grafika/pack_config.toml`:
 
 ```toml
 name = "Grafika Shader"
@@ -136,7 +136,7 @@ When a new Minecraft update changes the material structure:
 flowchart LR
   subgraph Sources[Shader sources]
     Src[src/materials\n.sc + varying + config]
-    Common[src/common + src/newb]
+    Common[src/common + src/grafika]
   end
   subgraph Base[Vanilla base - self-serialized]
     Game[C:\XboxGames\...\nrenderer/materials]
@@ -162,7 +162,7 @@ flowchart LR
 
 ## Development
 
-Clangd gives code completion and error checks for sources under `src/newb` (fake bgfx header + clangd config shipped):
+Clangd gives code completion and error checks for sources under `src/grafika` (fake bgfx header + clangd config shipped):
 
 - **Neovim**: install clangd LSP
 - **VSCode**: install [vscode-clangd](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd)

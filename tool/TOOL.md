@@ -82,7 +82,7 @@ Orchestrates full build and packaging.
 1. **Clean**: Wipe `build/pack-multiplatform/`.
 2. **Assets**: Copy `assets/` to build dir.
 3. **Compile Default**: Build all materials with the `default` define.
-4. **Compile Subpacks**: Iterates `[[subpack]]` entries in `src/newb/pack_config.toml`, building each subpack's materials into `subpacks/<name>/renderer/materials/` with its define (e.g. `REALISTIC_CLOUDS`).
+4. **Compile Subpacks**: Iterates `[[subpack]]` entries in `src/grafika/pack_config.toml`, building each subpack's materials into `subpacks/<name>/renderer/materials/` with its define (e.g. `REALISTIC_CLOUDS`).
 5. **Manifest**: Generate `manifest.json` with UUIDs, versioning and subpack list.
 6. **Labeling**: Inject version strings into shader binary headers (if not `--no-label`).
 7. **Archive**: Create `.mcpack`.

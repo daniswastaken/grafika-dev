@@ -117,7 +117,7 @@ def run(args):
     laz_ver = metadata.version('lazurite')
     console.print(f"  [bold green]Grafika Pack Builder[/] \n  [dim cyan]build tool: Lazurite {laz_ver}\n", style="")
 
-    with open('src/newb/pack_config.toml', 'rb') as f:
+    with open('src/grafika/pack_config.toml', 'rb') as f:
         try:
             pack_config = tomllib.load(f)
         except tomllib.TOMLDecodeError as e:

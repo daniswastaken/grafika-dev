@@ -4,8 +4,8 @@ $output v_texcoord0
 #include <bgfx_shader.sh>
 
 #ifndef INSTANCING
-  #include <newb/config.h>
-  #include <newb/functions/utils.h>
+  #include <grafika/config.h>
+  #include <grafika/functions/utils.h>
 
   uniform vec4 TimeOfDay;
   uniform vec4 Day;
@@ -33,15 +33,15 @@ void main() {
     if (isSun) {
       dist = -dist;
       pos.x = -pos.x;
-      pos.xz *= NL_SUN_SIZE;
-      angle = degToRad(NL_SUN_TILT);
-      tilt = degToRad( NL_SUN_PATH_TILT);
-      yaw = degToRad(NL_SUN_PATH_YAW);
+      pos.xz *= GS_SUN_SIZE;
+      angle = degToRad(GS_SUN_TILT);
+      tilt = degToRad( GS_SUN_PATH_TILT);
+      yaw = degToRad(GS_SUN_PATH_YAW);
     } else {
-      pos.xz *= NL_MOON_SIZE;
-      angle = degToRad(NL_MOON_TILT);
-      tilt = degToRad( NL_MOON_PATH_TILT);
-      yaw = degToRad(NL_MOON_PATH_YAW);
+      pos.xz *= GS_MOON_SIZE;
+      angle = degToRad(GS_MOON_TILT);
+      tilt = degToRad( GS_MOON_PATH_TILT);
+      yaw = degToRad(GS_MOON_PATH_YAW);
     }
     pos.xz = mul(rmat2(angle + 0.5*st), pos.xz);
 
