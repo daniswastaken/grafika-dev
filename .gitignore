@@ -1,6 +1,7 @@
 # ingnore dirs
 build/
 .bak/
+tool/data/
 tool/lib/
 tool/__pycache__/
 .venv
@@ -13,3 +14,6 @@ copy.sh
 
 # eol
 * text=lf
+
+# dev environments
+.opencode

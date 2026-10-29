@@ -67,8 +67,9 @@ void main() {
   // uvec2 a16 = uvec2(round(a_texcoord0 * 65535.0));
   // vec2 uv0 = vec2((a16 & uvec2(32767u)) << uvec2(1)) / 65535.0;
   // uv0 += (2.0*vec2((a16 & uvec2(32768u)) >> uvec2(15)) - 1.0) / 32768.0;
-  vec2 uv0 = 2.0*a_texcoord0.xy;
-  uv0 = fract(uv0) + ((floor(uv0)-0.5)/16384.0);
+  vec2 uv0q = 2.0*a_texcoord0.xy;
+  vec2 uv0f = floor(uv0q);
+  vec2 uv0 = (uv0q-uv0f) + ((uv0f-0.5)/16384.0); // == fract(uv0q) + ((floor(uv0q)-0.5)/16384.0)
 
 
   // bit 16 for dithering / mask tint

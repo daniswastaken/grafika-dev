@@ -5,7 +5,7 @@ import tomllib
 from importlib import import_module, metadata
 from rich.console import Console
 from rich.status import Status
-from util import print_styled_error, get_materials_path, create_pack_manifest, check_conf, SHADERC_PATH, GRAFIKA_DEPLOY_PATH
+from util import print_styled_error, get_materials_path, create_pack_manifest, check_conf, SHADERC_PATH
 from lazurite.compiler.macro_define import MacroDefine
 from lazurite import util
 
@@ -82,8 +82,7 @@ def _build(status: Status, profile: str, subpack: str, materials: [str], output_
         console.print(f"Error: Material '{e.args[0]}' does not exist in project.", style="bold red")
         _exit_with_error()
 
-    subpack_define = MacroDefine.from_string(subpack.upper())
-    defines = [subpack_define]
+    defines = [MacroDefine.from_string(subpack.upper())]
     if lite:
         defines.append(MacroDefine.from_string("LITE_CONFIG"))
 
@@ -116,7 +115,7 @@ def run(args):
 
     lp.print = _lp_print_override
     laz_ver = metadata.version('lazurite')
-    console.print(f"  [bold green]Newb Pack Builder[/] \n  [dim cyan]build tool: Lazurite {laz_ver}\n", style="")
+    console.print(f"  [bold green]Grafika Pack Builder[/] \n  [dim cyan]build tool: Lazurite {laz_ver}\n", style="")
 
     with open('src/newb/pack_config.toml', 'rb') as f:
         try:
@@ -132,7 +131,7 @@ def run(args):
             console.print("[yellow]Ignoring invalid version number '" + args.v + "' specified using -v")
 
     pack_name: str = pack_config['name']
-    pack_version = f"{pack_config['version'][1]}.{pack_config['version'][2]}"
+    pack_version = ".".join(str(v) for v in pack_config['version'])
     pack_authors = ', '.join(pack_config['authors'])
     profile: str = args.p
 
@@ -142,11 +141,11 @@ def run(args):
     console.print("  [dim]version :", "[cyan]" + pack_version + "\n")
 
     console.print("~ Build target", style="bold")
-    console.print("  [dim]profile :", "[cyan]" + args.p)
+    console.print("  [dim]profile :", "[cyan]" + profile)
 
     pack_acr_name = "".join(filter(str.isupper, pack_name)).lower()
     pack_acr_name = f"{pack_acr_name}-{pack_version}-{profile}"
-    pack_dir = os.path.join('build', 'pack-' + args.p)
+    pack_dir = os.path.join('build', 'pack-' + profile)
     mats_dir = os.path.join(pack_dir, 'renderer', 'materials')
 
     if os.path.exists(pack_dir):
@@ -155,17 +154,9 @@ def run(args):
 
     pack_description: str = pack_config['description']
 
-    patch_warning = "Only works with "
-    if profile == 'android':
-        patch_warning += "MB Loader"
-    elif profile == 'windows':
-        patch_warning += "BetterRenderDragon"
-    elif profile == 'merged':
-        patch_warning += "MB Loader (Android) or BetterRenderDragon (Windows)\nFor iOS, materials need to be installed manually for shader to work"
-    else:  # ios
-        patch_warning = "Materials need to be installed manually for shader to work"
+    patch_warning = "Only works with MB Loader (Android) or BetterRenderDragon (Windows)\nFor iOS, materials need to be installed manually for shader to work"
 
-    pack_description = pack_description.replace("%w", patch_warning).replace("%v", "v" + pack_version + "-" + args.p)
+    pack_description = pack_description.replace("%w", patch_warning).replace("%v", "v" + pack_version + "-" + profile)
     pack_config['description'] = pack_description
     pack_manifest = create_pack_manifest(pack_config)
 
@@ -177,7 +168,7 @@ def run(args):
         _name = pack_name + " v" + pack_version
         lp.Material.write = mwrite
 
-    _build(status, args.p, "default", pack_config['materials'], mats_dir, args.lite)
+    _build(status, profile, "default", pack_config['materials'], mats_dir, args.lite)
 
     for subpack in pack_config['subpack']:
         subpack_name: str = subpack['define'].lower()
@@ -189,7 +180,7 @@ def run(args):
             os.makedirs(subpack_path)
 
         if mats:
-            _build(status, args.p, subpack_name, mats, subpack_mats_path, args.lite)
+            _build(status, profile, subpack_name, mats, subpack_mats_path, args.lite)
 
         pack_manifest['subpacks'].append(
             {
@@ -200,10 +191,6 @@ def run(args):
         )
 
     status.stop()
-
-    is_ios = args.p == 'ios'
-    if is_ios:
-        pack_manifest.pop('subpacks')
 
     with open(os.path.join(pack_dir, 'manifest.json'), 'w') as f:
         json.dump(pack_manifest, f, indent=2)
@@ -219,35 +206,7 @@ def run(args):
             f.write(pack_credits)
 
     if not args.no_zip:
-        pack_archive = os.path.join('build', pack_acr_name + ('.zip' if is_ios else '.mcpack'))
+        pack_archive = os.path.join('build', pack_acr_name + '.mcpack')
         console.print("\n~ [bold]Archive pack\n ", pack_archive)
         shutil.make_archive(pack_dir, 'zip', pack_dir)
-        if not is_ios:
-            if os.path.exists(pack_archive):
-                os.remove(pack_archive)
-            os.rename(pack_dir + '.zip', pack_archive)
-
-    # Sync binaries to development resource pack
-    if profile == 'windows' and os.name == 'nt' and os.path.exists(GRAFIKA_DEPLOY_PATH):
-        # We need to deploy all built binaries, but Clouds and RenderChunk should come from subpacks
-        subpack_overrides = ["Clouds.material.bin", "RenderChunk.material.bin"]
-        
-        # 1. Deploy default materials (excluding those that should come from subpacks)
-        if os.path.exists(mats_dir):
-            for file in os.listdir(mats_dir):
-                if file.endswith(".bin") and file not in subpack_overrides:
-                    print(f"  > Deploying {file} from default")
-                    shutil.copy2(os.path.join(mats_dir, file), os.path.join(GRAFIKA_DEPLOY_PATH, file))
-
-        # 2. Deploy subpack materials (these will provide Clouds and RenderChunk)
-        for subpack in pack_config.get('subpack', []):
-            subpack_name = subpack['define'].lower()
-            sub_mats_dir = os.path.join(pack_dir, 'subpacks', subpack_name, 'renderer', 'materials')
-            if os.path.exists(sub_mats_dir):
-                for file in os.listdir(sub_mats_dir):
-                    if file.endswith(".bin"):
-                        print(f"  > Deploying {file} from {subpack_name}")
-                        shutil.copy2(os.path.join(sub_mats_dir, file), os.path.join(GRAFIKA_DEPLOY_PATH, file))
-        
-        print(f"\n~ Deployed all material binaries to: {GRAFIKA_DEPLOY_PATH}", flush=True)
-
+        os.rename(pack_dir + '.zip', pack_archive)

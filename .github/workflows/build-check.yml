@@ -1,0 +1,29 @@
+name: build-check
+
+on:
+  pull_request:
+    branches: [dev]
+  workflow_dispatch:
+
+jobs:
+  multiplatform:
+    runs-on: windows-2022
+    steps:
+    - uses: actions/checkout@v7
+    - uses: actions/setup-python@v7
+      with:
+        python-version: '3.14'
+        cache: 'pip'
+    - uses: actions/cache@v6
+      with:
+        key: env-files-win-laz
+        path: |
+          ${{ github.workspace }}/tool/data
+    - run: pip install -r requirements.txt
+    - run: |
+        .\build.bat setup
+        .\build.bat pack -v 99 --no-zip
+    - uses: actions/upload-artifact@v4
+      with:
+        name: grafika-multiplatform-pr
+        path: ./build/pack-multiplatform

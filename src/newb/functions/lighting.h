@@ -7,11 +7,7 @@
 #include "sky.h"
 #include "utils.h"
 
-vec3 sunLightTint(float dayFactor, float rain) {
-  float nightFactor = step(dayFactor, 0.0);
-  float dawnFactor = 1.0 - dayFactor * dayFactor;
-  dawnFactor *= dawnFactor * dawnFactor;
-  dawnFactor *= mix(1.0, dawnFactor * dawnFactor, nightFactor);
+vec3 sunLightTint(float nightFactor, float dawnFactor, float rain) {
   vec3 tint = mix(NL_NOON_SUNLIGHT_COL, NL_NIGHT_MOONLIGHT_COL, nightFactor);
   tint = mix(tint, NL_DAWN_SUNLIGHT_COL, dawnFactor);
   tint = mix(tint, vec3_splat(dot(tint, vec3_splat(0.33))), rain);
@@ -101,7 +97,7 @@ vec3 nlLighting(sampler2D tex, nl_skycolor skycol, nl_environment env,
 
     // direct light from top
     light = (NL_SUNLIGHT_INTENSITY * shadow * sunLightAttenuation) *
-            sunLightTint(env.dayFactor, env.rainFactor);
+            sunLightTint(nightFactor, dawnFactor, env.rainFactor);
 
     // sky ambient
     lum = luminance(light);
@@ -188,7 +184,7 @@ vec3 nlEntityLighting(nl_skycolor skycol, nl_environment env, vec3 pos,
 
     // direct light from top
     light = (NL_SUNLIGHT_INTENSITY * l * sunLightAttenuation) *
-            sunLightTint(env.dayFactor, env.rainFactor);
+            sunLightTint(nightFactor, dawnFactor, env.rainFactor);
     vec3 N = normalize(mul(world, normal)).xyz;
     light *= 0.9 + max(N.y, 0.0);
 

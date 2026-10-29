@@ -1,43 +1,26 @@
 import argparse
-import os
 import pack
 import build
 import setup
-import update_mats
+
+
+PROFILE = 'multiplatform'
 
 
 def main():
     parser = argparse.ArgumentParser(
         prog='build',
-        description="Newb Shader Builder: Wrapper for lazurite, to build NXL RenderDragon",
-        epilog="GitHub: https://github.com/devendrn/newb-x-mcbe"
+        description="Shader Builder: Wrapper for Lazurite, to build Grafika Shader for RenderDragon",
+        epilog="GitHub: https://github.com/daniswastaken/grafika"
     )
-
-    profiles = ['android', 'windows', 'merged', 'ios']
-    profile_default = profiles[1 if os.name == 'nt' else 0]
 
     subparsers = parser.add_subparsers(help='sub-command', dest='subcommand')
     pack_parser = subparsers.add_parser('pack', help="build shader pack")
-    pack_parser.set_defaults(func=pack.run)
+    pack_parser.set_defaults(func=pack.run, p=PROFILE)
     mats_parser = subparsers.add_parser('mats', help="build shader materials")
-    mats_parser.set_defaults(func=build.run)
+    mats_parser.set_defaults(func=build.run, p=PROFILE)
     setup_parser = subparsers.add_parser('setup', help="setup build tool")
     setup_parser.set_defaults(func=setup.run)
-    update_parser = subparsers.add_parser('update', help="update material data from JSONs")
-    update_parser.set_defaults(func=lambda args: update_mats.import_all(args.src, args.dest))
-
-    for p in [pack_parser, mats_parser]:
-        p.add_argument(
-            '-p',
-            choices=profiles,
-            default=profile_default,
-            help='build profile'
-        )
-        p.add_argument(
-            '--lite',
-            action='store_true',
-            help='build with config_lite.h'
-        )
 
     mats_parser.add_argument(
         '-m',
@@ -52,22 +35,17 @@ def main():
         help="subpack config to use (eg: NO_WAVE)"
     )
 
+    for p in [pack_parser, mats_parser]:
+        p.add_argument(
+            '--lite',
+            action='store_true',
+            help='build with config_lite.h'
+        )
+
     setup_parser.add_argument(
         '--reset',
         action='store_true',
         help="reset all data"
-    )
-
-    update_parser.add_argument(
-        "--src",
-        required=True,
-        help="Path to unpacked JSON materials"
-    )
-
-    update_parser.add_argument(
-        "--dest",
-        default="tool/data/materials",
-        help="Path to save processed materials"
     )
 
     pack_parser.add_argument(

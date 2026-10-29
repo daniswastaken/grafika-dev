@@ -82,7 +82,6 @@ float fastVoronoi2(vec2 pos, float f) {
 }
 
 float movingNoise2D(vec2 pos, float t, float f) {
-  vec2 tpos = 16.0*fract(pos/16.0);
   float nf0 = fastVoronoi2(0.125*pos.xy, 12.0);
   float nf2 = fastVoronoi2(0.04*pos.xy*vec2(0.5,1.0) + 0.5*nf0 + 0.05*t, 2.0);
   float n0 = sin(1.5*nf0*nf0 + pos.x - sin(pos.y) + t);

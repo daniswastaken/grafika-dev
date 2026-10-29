@@ -1,53 +1,62 @@
-## Building
+# Grafika Shader
 
-### Install dependencies
+An anime-style shader for Minecraft Bedrock (RenderDragon).
+
+## Requirements
+
 - [Git](https://git-scm.com/)
-- [Python](https://www.python.org/) 3.11 or higher required
-- Python packages:
-  - [lazurite](https://veka0.github.io/lazurite/#installation) (Must be `v0.10.0` for Minecraft 1.26.50 / material version 26. Newer or older version may not be supported)
-  - [rich](https://rich.readthedocs.io/en/stable/introduction.html#installation) (Must be `v14.x.x`)
+- Python 3.11 or higher
+- Python packages (see `requirements.txt`):
+  - [lazurite](https://veka0.github.io/lazurite/#installation) `==0.12.0` (Minecraft 1.26.60 / material version 26)
+  - [rich](https://rich.readthedocs.io/) `==15.0.0`
+  - `packaging>=25.0`, `pillow>=11.0`, `numpy>=2.0`
+
+> [!NOTE]
+> Minecraft 1.26.60 ships material version 26 in two buffer layouts (most materials carry a new 4-byte field, 9 legacy materials don't) and no single stock lazurite version reads both. `grafika --extract` retries the legacy layout on files that fail the stock read, so one lazurite install serializes the whole game dir.
 
 ### Get source code
-```
-git clone https://github.com/devendrn/newb-x-mcbe/
-cd newb-x-mcbe
-```
 
-### Install dependencies from requirements.txt
-*Skip if you already have installed those versions.*
 ```
+git clone https://github.com/daniswastaken/grafika/
+cd grafika
 python -m pip install -r requirements.txt
 ```
 
 ### Setup build environment
-> [!NOTE]
+
 > On Windows, run `.\build.bat` instead of `./build.sh` for all following commands.
+
 ```
 ./build.sh setup
 ```
-This will download shaderc binary and material data required to build shader.
 
-<br>
+This downloads the `shaderc` compiler into `tool/data/`. Material sources are **not** downloaded — generate them from your own game:
 
-### Compile specific shader materials
+```
+python grafika/grafika.py --extract
+```
+
+### Compile materials
+
 ```
 ./build.sh mats
 ```
-Compiled material.bin files will be inside `build/<platform>/`
+
+Compiled `.material.bin` files land in `build/multiplatform/`.
 
 **Command usage:**
 ```
-usage: build mats [-h] [-p {android,windows,merged,ios}] [-m M [M ...]] [-s S]
+usage: build mats [-h] [-m M [M ...]] [-s S] [--lite]
 
 options:
   -h, --help            show this help message and exit
-  -p {android,windows,merged,ios}
-                        build profile
   -m M [M ...]          build materials (eg: Sky)
   -s S                  subpack config to use (eg: NO_WAVE)
+  --lite                build with config_lite.h
 ```
 
-### Compile and build full shader pack
+### Build the full shader pack
+
 ```
 ./build.sh pack
 ```
@@ -56,76 +65,114 @@ The final mcpack will be inside `build/`.
 
 **Command usage:**
 ```
-usage: build pack [-h] [-p {android,windows,merged,ios}] [--no-zip] [--no-label] [-v V]
+usage: build pack [-h] [--lite] [--no-zip] [--no-label] [-v V]
 
 options:
   -h, --help            show this help message and exit
-  -p {android,windows,merged,ios}
-                        build profile
+  --lite                build with config_lite.h
   --no-zip              don't make archive
   --no-label            don't label materials
   -v V                  version number eg: 17
 ```
 
 > [!TIP]
-> If you want to customize pack name, author, version and other details, you can do so in `src/newb/pack_config.toml`.
+> One `multiplatform` profile compiles ESSL_300 + Direct3D_SM50 + Metal from the same sources — one bin set works on Android, Windows and iOS. Cloud subpacks (Realistic / Rounded / Box) are built automatically into `subpacks/`.
 
-<br>
+### Configuration
 
-## Development
+Pack identity and support floor live in `src/newb/pack_config.toml`:
 
-Clangd can be used to get code completion and error checks for source files inside include/newb. Fake bgfx header and clangd config are provided for the same.
-- **Neovim**: Install clangd LSP.
-- **VSCode**: Install [vscode-clangd](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd) extension.
+```toml
+name = "Grafika Shader"
+version = [0, 2, 0]
+min_supported_mc_version = [1, 26, 0]
+```
+
+Cloud subpack variants are declared in the same file. Per-profile macros and the material include list live in `src/materials/project.json`.
+
+## Grafika dev tool (Windows only)
+
+`grafika/` automates the Windows edit-compile-test loop: **extract → compile → inject → reset**, against the stable edition only (`C:\XboxGames\Minecraft for Windows`, no Preview). Pure stdlib, no IObit, no loaders required.
+
+```bash
+python grafika/grafika.py --extract   # serialize ALL game bins to base JSONs
+python grafika/grafika.py --serialize # re-serialize base JSONs only (no backup/diff)
+python grafika/grafika.py --install   # compile multiplatform mats + inject
+python grafika/grafika.py --reset     # restore vanilla materials from backup
+python grafika/grafika.py             # interactive TUI (same commands + status)
+```
+
+**First run:** `--extract`, then `--install`. **After a game update** (the only event that restores original files — launching never does): `--extract` again (it diffs and tells you what changed), then `--install`. **To uninstall:** `--reset`.
+
+Why it's safe:
+
+- `--extract` **refuses** an injected game folder instead of baking your own output back into the base
+- First run snapshots all vanilla bins (`tool/data/vanilla/`) with SHA-256 hashes; every injection is hash-verified with automatic rollback on mismatch
+- `--reset` restores exactly the set `--install` recorded — no more, no less
+- All state under gitignored `tool/data/`; nothing machine-specific is ever committed
+
+Runs in your current terminal (Warp/bash/cmd, `--plain` forces line mode for dumb terminals). Writes usually succeed unelevated; `--elevate` (or an elevated terminal) covers the rest — via [gsudo](https://github.com/gerardog/gsudo) in-window when installed, UAC popup otherwise.
+
+```
+grafika/
+  grafika.py  # thin CLI entry (flags headless, no args = TUI)
+  core.py     # extract / compile / inject / reset logic
+  ui.py       # terminal UI (chatbox + plain fallback)
+  app.py      # TUI main loop
+  commands/   # extract.py install.py reset.py status.py pack.py alpha.py
+```
 
 ## Updating for New Minecraft Versions
 
-When a new Minecraft update (e.g., 1.26.20) releases, it often changes the underlying material structure, which can break the shader compilation. To fix this, you must update the "source materials" in `tool/data/materials` using the latest game data.
+When a new Minecraft update changes the material structure:
 
-> [!WARNING]
-> Check the new game material `version` against your `lazurite` before updating.
-> Each lazurite caps at a max version (e.g. `v0.8.4` stops at 25, but 1.26.50 is
-> version 26 and needs `v0.10.0`). Updating `tool/data/materials` to a version
-> your lazurite can't compile gives `Unsupported material version` and no usable
-> bins. Don't overshoot either: newer lazurite drops old game compat
-> (e.g. `v0.11.0` targets 26.60+ and breaks 26.50 files, including a minimal-JSON
-> format bump). The update script migrates old minimal-JSON v1 bases to v2, but it
-> can't add compiler support. Match lazurite to the game first, then update.
+1. Check the new material `version` against your `lazurite` first — each lazurite caps at a max version. Going past it gives `Unsupported material version` and no usable bins.
+2. Run `python grafika/grafika.py --extract` against the updated game. It serializes the new game bins into `tool/data/materials` (legacy-layout files fall back automatically — see `grafika/laz_compat.py`), diffs the change set for you, and refreshes the vanilla backup.
+3. Rebuild as usual.
 
-### 1. Extract latest materials
-Use a tool like **MaterialBinTool** to unpack the latest `.material.bin` files from the game into `.json` headers.
+## Architecture
 
-### 2. Update tool data
-Run the provided update script to merge the new game data into the build system:
-```powershell
-python tool/update_mats.py --src "C:\Path\To\Your\Unpacked\JSONs"
+```mermaid
+flowchart LR
+  subgraph Sources[Shader sources]
+    Src[src/materials\n.sc + varying + config]
+    Common[src/common + src/newb]
+  end
+  subgraph Base[Vanilla base - self-serialized]
+    Game[C:\XboxGames\...\nrenderer/materials]
+    Json[tool/data/materials\n*.material.json]
+    Game -->|grafika --extract| Json
+  end
+  subgraph Build[Build outputs]
+    Mats[build/multiplatform\n*.material.bin]
+    Pack[build/*.mcpack]
+  end
+  subgraph Deploy[Windows dev loop]
+    Inject[game materials\ninjected]
+    Vanilla[tool/data/vanilla\nbackup]
+  end
+  Src --> Mats
+  Json --> Mats
+  Common --> Mats
+  Mats --> Pack
+  Mats -->|grafika --install| Inject
+  Game -->|first run backup| Vanilla
+  Vanilla -->|grafika --reset| Game
 ```
-This script will:
-- Repair old material formats to match `lazurite v0.10.0` (minimal JSON format v2).
-- Merge latest `version`, `uniforms`, and `buffers` from your JSON files.
-- Preserve project-specific shader passes and attributes.
 
-### 3. Rebuild
-After updating, run the build command as usual:
-```powershell
-python tool mats -p windows
-```
+## Development
 
-<br>
+Clangd gives code completion and error checks for sources under `src/newb` (fake bgfx header + clangd config shipped):
 
-## Troubleshooting
+- **Neovim**: install clangd LSP
+- **VSCode**: install [vscode-clangd](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd)
 
-### "Unclosed b'NumericLiteral' starting near 1"
-This error usually means that the `material.json` or `uniforms` files in `src/materials/` are acting as "pointers" (plain text files containing a path like `../../common/material.json`) but `lazurite` expects valid JSON.
-- **Fix**: Replace the pointer files with the actual content of the files they point to.
+## Tool documentation
 
-### "IndexError: list index out of range" during build
-This happens when the base materials in `tool/data/materials` are in an older format than what your `lazurite` version expects.
-- **Fix**: Run `python tool/update_mats.py` with the `--src` of your latest game JSONs to repair and upgrade the base materials.
-
-<br>
+See [tool/TOOL.md](tool/TOOL.md) for internals of the build tool.
 
 ## Credits & License
+
 - **Base Shader**: [Newb Shaders](https://github.com/devendrn/newb-shader-mcbe) by devendrn.
-- **Modifications**: daniswastaken.
-- **License**: The "Newb Shader" source code is licensed under the **MIT License**. You are free to modify, distribute, and create derivative works based on the source code.
+- **Modifications & tooling**: daniswastaken.
+- **License**: The source code is licensed under the **MIT License**. Compiled packs: see `pack_config.toml` copyright.

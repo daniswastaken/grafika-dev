@@ -42,12 +42,14 @@ void main() {
   diffuse.rgb *= color.rgb;
   diffuse.rgb += glow;
 
+  // derivative hoisted out of dynamic branch (same value, dfdx inside
+  // non-uniform control flow is undefined behavior in GLSL ES)
+  float waterDy = abs(dFdy(v_extra.g));
   if (v_extra.b > 0.9) {
     diffuse.rgb += v_refl.rgb*v_refl.a;
   } else if (v_refl.a > 0.0) {
     // reflective effect - only on xz plane
-    float dy = abs(dFdy(v_extra.g));
-    if (dy < 0.0002) {
+    if (waterDy < 0.0002) {
       float mask = v_refl.a*(clamp(v_extra.r*10.0,8.2,8.8)-7.8);
       diffuse.rgb *= 1.0 - 0.6*mask;
       diffuse.rgb += v_refl.rgb*mask;

@@ -82,7 +82,8 @@ vec3 renderOverworldSky(nl_skycolor skyCol, nl_environment env, vec3 viewDir, bo
   float mask = 0.5 + (0.5*viewDir.y/(0.4 + avy));
 
   vec2 g = clamp(0.5 - 0.5*vec2(dot(env.sunDir, viewDir), dot(env.moonDir, viewDir)), 0.0, 1.0);
-  vec2 g1 = 1.0-mix(sqrt(g), g, env.rainFactor);
+  // rain == 1 skips sqrt: mix(sqrt(g), g, 1.0) == g (exact)
+  vec2 g1 = (env.rainFactor >= 1.0) ? 1.0-g : 1.0-mix(sqrt(g), g, env.rainFactor);
   vec2 g2 = g1*g1;
   vec2 g4 = g2*g2;
   vec2 g8 = g4*g4;
@@ -102,7 +103,8 @@ vec3 renderOverworldSky(nl_skycolor skyCol, nl_environment env, vec3 viewDir, bo
 
   float dawnFactor = 1.0-env.dayFactor*env.dayFactor;
   float df = mix(1.0, g2.x, dawnFactor*dawnFactor);
-  vec3 sky = mix(skyCol.horizon, skyCol.horizonEdge, gradient1*df*df);
+  float df2 = df*df;
+  vec3 sky = mix(skyCol.horizon, skyCol.horizonEdge, gradient1*df2);
   sky = mix(skyCol.zenith, sky, gradient2*df);
 
   sky *= 0.5+0.5*gradient2;
@@ -122,7 +124,9 @@ vec3 renderOverworldSky(nl_skycolor skyCol, nl_environment env, vec3 viewDir, bo
     rainbowFade *= rainbowFade;
     rainbowFade *= mix(NL_RAINBOW_CLEAR, NL_RAINBOW_RAIN, env.rainFactor);
     rainbowFade *= 0.5+0.5*env.dayFactor;
-    sky += spectrum(24.2*(0.85-g.x))*rainbowFade*skyCol.horizon;
+    if (rainbowFade > 0.0) {
+      sky += spectrum(24.2*(0.85-g.x))*rainbowFade*skyCol.horizon;
+    }
   #endif
 
   return sky;
@@ -265,6 +269,12 @@ vec3 nlRenderSky(nl_skycolor skycol, nl_environment env, vec3 viewDir, float t, 
 
 // shooting star
 vec3 nlRenderShootingStar(vec3 viewDir, vec3 FOG_COLOR, float t) {
+  // exact early-out: final term scales by dayFade, 0 glow nothing to add
+  float dayFade = max(1.0-FOG_COLOR.r-FOG_COLOR.g-FOG_COLOR.b, 0.0);
+  if (dayFade == 0.0) {
+    return vec3_splat(0.0);
+  }
+
   // transition vars
   float h = t / (NL_SHOOTING_STAR_DELAY + NL_SHOOTING_STAR_PERIOD);
   float h0 = floor(h);
@@ -293,13 +303,15 @@ vec3 nlRenderShootingStar(vec3 viewDir, vec3 FOG_COLOR, float t) {
   s *= 1.0-t1; // fade in
   s *= 1.0-t0; // fade out
   s *= 0.7 + 16.0*g*g;
-  s *= max(1.0-FOG_COLOR.r-FOG_COLOR.g-FOG_COLOR.b, 0.0); // fade out during day
+  s *= dayFade; // fade out during day
   return s*vec3(0.8, 0.9, 1.0);
 }
 
 // Galaxy stars - needs further optimization
 vec3 nlRenderGalaxy(vec3 vdir, vec3 fogColor, nl_environment env, float t) {
-  if (env.underwater) {
+  // exact early-out: result scales by visibility, 0 glow nothing to add
+  float visibility = mix(1.0, NL_GALAXY_DAY_VISIBILITY, env.dayFactor)*(1.0-env.rainFactor);
+  if (env.underwater || visibility == 0.0) {
     return vec3_splat(0.0);
   }
 
@@ -334,9 +346,7 @@ vec3 nlRenderGalaxy(vec3 vdir, vec3 fogColor, nl_environment env, float t) {
   vec3 gfcol = normalize(vec3(n0, cos(2.0*vdir.y), sin(vdir.x+n0)));
   stars += (0.4*gf + 0.012)*mix(vec3(0.5, 0.5, 0.5), gfcol*gfcol, NL_GALAXY_VIBRANCE);
 
-  stars *= mix(1.0, NL_GALAXY_DAY_VISIBILITY, env.dayFactor);
-
-  return stars*(1.0-env.rainFactor);
+  return stars*visibility;
 }
 
 
