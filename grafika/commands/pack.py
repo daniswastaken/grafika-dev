@@ -8,9 +8,11 @@ def run():
     ui.info("Compiles multiplatform mats + assembles the .mcpack (mirrors `tool pack`).")
     ui.info("Output lands in build/. Non-destructive (game files untouched).")
     print()
+    tier = ui.prompt_choice("Shader tier", ["Pro", "Lite"])
     version = ui.prompt("Version override (eg: 46, empty = pack_config.toml)", default="")
     output = ui.prompt_choice("Pack output", ["Archive (.mcpack)", "Folder only (no zip)"])
     print()
-    core.cmd_pack(no_zip=(output != "Archive (.mcpack)"), version=version)
+    core.cmd_pack(no_zip=(output != "Archive (.mcpack)"), version=version,
+                  lite=(tier == "Lite"))
     print()
     ui.success("Pack finished.")

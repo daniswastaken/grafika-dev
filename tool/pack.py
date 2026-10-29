@@ -125,13 +125,24 @@ def run(args):
             exit(1)
 
     if args.v:
-        if args.v.isdigit():
-            pack_config['version'][2] = int(args.v)
+        version_parts = args.v.split('.')
+        if version_parts and all(part.isdigit() for part in version_parts) and len(version_parts) <= 3:
+            version_values = [int(part) for part in version_parts]
+            if len(version_values) == 1:
+                pack_config['version'][2] = version_values[0]
+            elif len(version_values) == 2:
+                pack_config['version'][0] = version_values[0]
+                pack_config['version'][1] = version_values[1]
+            else:
+                pack_config['version'] = version_values
         else:
             console.print("[yellow]Ignoring invalid version number '" + args.v + "' specified using -v")
 
-    pack_name: str = pack_config['name']
     pack_version = ".".join(str(v) for v in pack_config['version'])
+    pack_name: str = pack_config['name'].replace('%v', 'v' + pack_version)
+    if args.lite:
+        pack_name = pack_name.replace('Pro', 'Lite')
+    pack_config['name'] = pack_name
     pack_authors = ', '.join(pack_config['authors'])
     profile: str = args.p
 
@@ -143,8 +154,8 @@ def run(args):
     console.print("~ Build target", style="bold")
     console.print("  [dim]profile :", "[cyan]" + profile)
 
-    pack_acr_name = "".join(filter(str.isupper, pack_name)).lower()
-    pack_acr_name = f"{pack_acr_name}-{pack_version}-{profile}"
+    pack_tier = "LITE" if args.lite else "PRO"
+    pack_acr_name = f"Grafika-v{pack_version}-{pack_tier}"
     pack_dir = os.path.join('build', 'pack-' + profile)
     mats_dir = os.path.join(pack_dir, 'renderer', 'materials')
 

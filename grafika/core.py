@@ -305,7 +305,7 @@ def copy_verified(src: Path, dst: Path) -> None:
                        "Re-run with --elevate or from an elevated terminal.")
 
 
-def cmd_install() -> None:
+def cmd_install(lite: bool = False) -> None:
     if not MATERIALS_JSON_DIR.is_dir() or not list(MATERIALS_JSON_DIR.glob("*.material.json")):
         log("Error: no base JSONs. Run `grafika.py --extract` first.")
         sys.exit(1)
@@ -316,7 +316,10 @@ def cmd_install() -> None:
     if BUILD_MULTI.is_dir():
         shutil.rmtree(BUILD_MULTI)
     log("Compiling multiplatform mats...")
-    r = subprocess.run([sys.executable, "tool", "mats"], cwd=str(ROOT))
+    mats_cmd = [sys.executable, "tool", "mats"]
+    if lite:
+        mats_cmd.append("--lite")
+    r = subprocess.run(mats_cmd, cwd=str(ROOT))
     if r.returncode != 0:
         log("Error: compile failed.")
         sys.exit(1)
@@ -429,7 +432,7 @@ def cmd_reset() -> None:
 
 # ---------- --pack (.mcpack maker, mirrors `tool pack`) ----------
 
-def cmd_pack(no_zip: bool = False, no_label: bool = False, version: str = "") -> None:
+def cmd_pack(no_zip: bool = False, no_label: bool = False, version: str = "", lite: bool = False) -> None:
     if not MATERIALS_JSON_DIR.is_dir() or not list(MATERIALS_JSON_DIR.glob("*.material.json")):
         log("Error: no base JSONs. Run `grafika.py --extract` first.")
         sys.exit(1)
@@ -444,6 +447,8 @@ def cmd_pack(no_zip: bool = False, no_label: bool = False, version: str = "") ->
         cmd.append("--no-label")
     if version:
         cmd += ["-v", version]
+    if lite:
+        cmd.append("--lite")
     log("Building .mcpack (multiplatform)...")
     r = subprocess.run(cmd, cwd=str(ROOT))
     if r.returncode != 0:
@@ -461,12 +466,13 @@ def run_cli_action(action: str, **kwargs) -> None:
     elif action == "serialize":
         cmd_serialize()
     elif action == "install":
-        cmd_install()
+        cmd_install(kwargs.get("lite", False))
     elif action == "reset":
         cmd_reset()
     elif action == "pack":
         cmd_pack(kwargs.get("no_zip", False),
                  kwargs.get("no_label", False),
-                 kwargs.get("version", ""))
+                 kwargs.get("version", ""),
+                 kwargs.get("lite", False))
     else:
         raise ValueError(f"Unknown action: {action}")

@@ -44,6 +44,8 @@ def main() -> None:
                     help="pack: don't make archive")
     ap.add_argument("--no-label", action="store_true",
                     help="pack: don't label materials")
+    ap.add_argument("--lite", action="store_true",
+                    help="install/pack: use config_lite.h (Lite tier)")
     ap.add_argument("-v", default="",
                     help="pack: version number override eg: 46")
     ap.add_argument("--elevate", action="store_true",
@@ -69,10 +71,10 @@ def main() -> None:
         core.run_cli_action("serialize")
     elif args.install:
         if args.elevate:
-            core.ensure_admin(["--install"])
+            core.ensure_admin(["--install"] + (["--lite"] if args.lite else []))
         else:
             core.note_admin()
-        core.run_cli_action("install")
+        core.run_cli_action("install", lite=args.lite)
     elif args.reset:
         if args.elevate:
             core.ensure_admin(["--reset"])
@@ -88,11 +90,13 @@ def main() -> None:
                 pack_argv.append("--no-label")
             if args.v:
                 pack_argv += ["-v", args.v]
+            if args.lite:
+                pack_argv.append("--lite")
             core.ensure_admin(pack_argv)
         else:
             core.note_admin()
         core.run_cli_action("pack", no_zip=args.no_zip,
-                            no_label=args.no_label, version=args.v)
+                            no_label=args.no_label, version=args.v, lite=args.lite)
     else:
         if args.elevate:
             core.ensure_admin([])
