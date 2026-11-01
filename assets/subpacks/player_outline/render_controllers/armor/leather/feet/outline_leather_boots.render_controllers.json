@@ -1,0 +1,21 @@
+{
+  "format_version": "1.10.0",
+  "render_controllers": {
+    "controller.render.outline_leather_boots_layer": {
+      "geometry": "Geometry.armor_1_outline",
+      "materials": [ { "*": "Material.outline" } ],
+      "textures": [ "Texture.leather_1" ],
+      "part_visibility": [
+        { "*": false },
+        { "leftPants_0_outline": true }, { "leftPants_1_outline": true }, { "leftPants_2_outline": true },
+        { "leftPants_3_outline": true }, { "leftPants_4_outline": true }, { "leftPants_5_outline": true },
+        { "rightPants_0_outline": true }, { "rightPants_1_outline": true }, { "rightPants_2_outline": true },
+        { "rightPants_3_outline": true }, { "rightPants_4_outline": true }, { "rightPants_5_outline": true }
+      ],
+      "overlay_color": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 },
+      "is_hurt_color": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 },
+      "on_fire_color": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 },
+      "ignore_lighting": false
+    }
+  }
+}

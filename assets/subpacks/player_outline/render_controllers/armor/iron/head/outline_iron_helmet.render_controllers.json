@@ -1,0 +1,19 @@
+{
+  "format_version": "1.10.0",
+  "render_controllers": {
+    "controller.render.outline_iron_helmet_layer": {
+      "geometry": "Geometry.armor_1_outline",
+      "materials": [ { "*": "Material.outline" } ],
+      "textures": [ "Texture.iron_1" ],
+      "part_visibility": [
+        { "*": false },
+        { "hat_0_outline": true }, { "hat_1_outline": true }, { "hat_2_outline": true },
+        { "hat_3_outline": true }, { "hat_4_outline": true }, { "hat_5_outline": true }
+      ],
+      "overlay_color": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 },
+      "is_hurt_color": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 },
+      "on_fire_color": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 },
+      "ignore_lighting": false
+    }
+  }
+}

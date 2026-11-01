@@ -213,7 +213,7 @@ def run(args):
 
     pack_credits = pack_config['info']['credits']
     if pack_credits:
-        with open(os.path.join(pack_dir, 'CREDITS.txt'), 'w') as f:
+        with open(os.path.join(pack_dir, 'credits.txt'), 'w') as f:
             f.write(pack_credits)
 
     if not args.no_zip:
