@@ -2,7 +2,6 @@
 
 Usage:
     python grafika/grafika.py --extract   # serialize ALL vanilla .bins -> tool/data/materials
-    python grafika/grafika.py --serialize # re-serialize base JSONs only (no backup/diff)
     python grafika/grafika.py --install   # compile multiplatform mats + inject into game
     python grafika/grafika.py --reset     # restore vanilla .bins from backup
     python grafika/grafika.py --pack      # build .mcpack resource pack
@@ -32,8 +31,6 @@ def main() -> None:
     g = ap.add_mutually_exclusive_group(required=False)
     g.add_argument("--extract", action="store_true",
                    help="serialize ALL game .bins to tool/data/materials (overwrites)")
-    g.add_argument("--serialize", action="store_true",
-                   help="re-serialize game .bins to base JSONs only (no vanilla backup/diff)")
     g.add_argument("--install", action="store_true",
                    help="compile multiplatform mats and inject produced bins into game")
     g.add_argument("--reset", action="store_true",
@@ -63,12 +60,6 @@ def main() -> None:
         else:
             core.note_admin()
         core.run_cli_action("extract")
-    elif args.serialize:
-        if args.elevate:
-            core.ensure_admin(["--serialize"])
-        else:
-            core.note_admin()
-        core.run_cli_action("serialize")
     elif args.install:
         if args.elevate:
             core.ensure_admin(["--install"] + (["--lite"] if args.lite else []))

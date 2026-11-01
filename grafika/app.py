@@ -4,12 +4,12 @@ Main interactive shell - the core loop of grafika TUI.
 import shutil
 
 import ui
-from commands import extract, install, reset, status, pack, alpha, serialize
+from commands import extract, install, reset, status, pack, alpha
 
 
 COMMANDS = [
     ("extract", "Serialize ALL vanilla game bins to base JSONs"),
-    ("serialize", "Re-serialize game bins to base JSONs (no backup/diff)"),
+
     ("install", "Compile multiplatform mats + inject into game"),
     ("pack",    "Build .mcpack resource pack"),
     ("reset",   "Restore vanilla game materials from backup"),
@@ -99,8 +99,6 @@ def start():
                 _show_help()
             elif cmd == "extract":
                 extract.run()
-            elif cmd == "serialize":
-                serialize.run()
             elif cmd == "install":
                 install.run()
             elif cmd == "reset":

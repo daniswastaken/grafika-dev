@@ -267,16 +267,6 @@ def cmd_extract() -> None:
     log(f"Done: {count} base JSONs in {MATERIALS_JSON_DIR}" + (f" ({pruned} stale pruned)" if pruned else ""))
 
 
-def cmd_serialize() -> None:
-    """Re-serialize base JSONs from the game bins only (no backup, no diff)."""
-    bins = list_game_bins()
-    log(f"Found {len(bins)} game .bin files (game v{game_version()}).")
-    _pristine_guard(bins)
-    _serialize_bins(bins)
-    count = len(list(MATERIALS_JSON_DIR.glob("*.material.json")))
-    log(f"Done: {count} base JSONs in {MATERIALS_JSON_DIR}")
-
-
 # ---------- --install ----------
 
 def kill_game() -> None:
@@ -463,8 +453,6 @@ def run_cli_action(action: str, **kwargs) -> None:
     """Dispatch one CLI action by name. Used by grafika.py entry point."""
     if action == "extract":
         cmd_extract()
-    elif action == "serialize":
-        cmd_serialize()
     elif action == "install":
         cmd_install(kwargs.get("lite", False))
     elif action == "reset":
