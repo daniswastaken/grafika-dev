@@ -23,9 +23,17 @@ float gsRenderGodRayIntensity(vec3 cPos, vec3 worldPos, float t, vec2 uv1, float
   //offset = 0.5 + 0.5*cos(offset*0.392699082);
 
   //vec3 ofPos = wPos+offset;
-  vec3 nrmof = worldPos*inversesqrt(dot(worldPos, worldPos)); // == normalize(worldPos)
+  float worldPosLen2 = dot(worldPos, worldPos);
+  if (worldPosLen2 < 1e-8) {
+    return 0.0;
+  }
+  vec3 nrmof = worldPos*inversesqrt(worldPosLen2); // == normalize(worldPos)
 
-  float u = nrmof.z/length(nrmof.zy);
+  float nrmofZyLen = length(nrmof.zy);
+  if (nrmofZyLen < 1e-4) {
+    return 0.0;
+  }
+  float u = nrmof.z/nrmofZyLen;
   float diff = dot(offset,vec3(0.1,0.2,1.0)) + 0.07*t;
   float mask = nrmof.x*nrmof.x;
 

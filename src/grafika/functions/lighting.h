@@ -79,20 +79,24 @@ vec3 gsLighting(sampler2D tex, gs_skycolor skycol, gs_environment env,
 #ifdef GS_CLOUD_SHADOW
     // shadow cast by simple clouds
     vec3 mainLightDir = env.sunDir.y > 0.0 ? env.sunDir : env.moonDir;
-    vec3 gPos = wPos + CAMERA_POS;
-    float cloudRelativeHeight = gPos.y - 187.0;
-    vec2 projectionOffset =
-        cloudRelativeHeight * mainLightDir.xz / mainLightDir.y;
-    vec2 projectedPos = gPos.xz + projectionOffset;
-    float cloudFade =
-        smoothstep(1.0, 0.5, length(0.002 * (wPos.xz + projectionOffset)));
-    cloudFade *= (1.0 - dawnFactor * dawnFactor) *
-                 clamp(-0.12 * (cloudRelativeHeight - 7.0), 0.0, 1.0);
-    shadow *=
-        0.3 + 0.7 * smoothstep(0.6, 0.0,
-                               cloudNoise2D(projectedPos * GS_CLOUD1_SCALE, t,
-                                            env.rainFactor) *
-                                   cloudFade);
+    // Skip cloud shadow near the horizon: projection explodes and can produce
+    // NaNs / huge intermediates with no visible benefit.
+    if (abs(mainLightDir.y) > 0.05) {
+      vec3 gPos = wPos + CAMERA_POS;
+      float cloudRelativeHeight = gPos.y - 187.0;
+      vec2 projectionOffset =
+          cloudRelativeHeight * mainLightDir.xz / (mainLightDir.y + (mainLightDir.y > 0.0 ? 1e-4 : -1e-4));
+      vec2 projectedPos = gPos.xz + projectionOffset;
+      float cloudFade =
+          smoothstep(1.0, 0.5, length(0.002 * (wPos.xz + projectionOffset)));
+      cloudFade *= (1.0 - dawnFactor * dawnFactor) *
+                   clamp(-0.12 * (cloudRelativeHeight - 7.0), 0.0, 1.0);
+      shadow *=
+          0.3 + 0.7 * smoothstep(0.6, 0.0,
+                                 cloudNoise2D(projectedPos * GS_CLOUD1_SCALE, t,
+                                              env.rainFactor) *
+                                     cloudFade);
+    }
 #endif
 
     // direct light from top

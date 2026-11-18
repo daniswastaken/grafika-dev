@@ -8,7 +8,7 @@ def run():
     ui.warn("This compiles multiplatform mats and REPLACES game files.")
     print()
     tier = ui.prompt_choice("Shader tier", ["Pro", "Lite"])
-    if not ui.prompt_confirm("Compile and inject into the game?", default=False):
+    if not ui.prompt_confirm("Compile and inject into the game?", default=True):
         ui.info("Install cancelled.")
         return
     print()

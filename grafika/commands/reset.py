@@ -7,7 +7,7 @@ def run():
     ui.header("Reset To Vanilla")
     ui.warn("This restores vanilla game materials from the backup.")
     print()
-    if not ui.prompt_confirm("Restore vanilla materials?", default=False):
+    if not ui.prompt_confirm("Restore vanilla materials?", default=True):
         ui.info("Reset cancelled.")
         return
     print()

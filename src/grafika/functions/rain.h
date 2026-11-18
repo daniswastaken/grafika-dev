@@ -46,7 +46,7 @@ vec4 gsRefl(
         reflective = mix(reflective, wetness, env.rainFactor);
       #endif
 
-      if (wPos.y < 0.0) {
+      if (wPos.y < 0.0 && reflective > 0.0) {
         viewDir.y = -viewDir.y;
         wetRefl.rgb = gsRenderSky(skycol, env, viewDir, t, false);
 
